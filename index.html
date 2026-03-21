@@ -123,6 +123,21 @@ select.add-input{background:#f8fafc;}
       </div>
     </div>
 
+    <div class="card" style="border:2px solid #bbf7d0;">
+      <div class="card-title" style="color:#16a34a;">Extra Income</div>
+      <div class="add-row">
+        <input class="add-input" id="exIncDesc" placeholder="Description (e.g. Freelance, Bonus...)"/>
+        <input class="add-input" type="number" id="exIncAmt" placeholder="Amount SR" style="flex:0 1 120px;font-family:'Courier New',monospace;font-weight:800;"/>
+        <button class="add-btn" style="background:#16a34a;" onclick="addExtraIncome()">+ Add</button>
+      </div>
+      <div id="exIncErr" style="color:#dc2626;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
+        <span style="font-size:13px;font-weight:800;color:#475569;">Total Extra This Month</span>
+        <span id="exIncTotalLbl" style="font-size:18px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;">0 SR</span>
+      </div>
+      <div id="exIncList"></div>
+    </div>
+
     <div class="card" style="border:2px solid #e9d5ff;background:#fdf4ff;">
       <div class="card-title" style="color:#7c3aed;">📊 Your Money — This Month</div>
       <div id="incomePanel"><div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div></div>
@@ -272,7 +287,7 @@ var SCH_P2_MTHS  = 5;   // months 5-9 = P2 saving period
 // ═══════════════════════════════════════════════════════════
 var vm = 2, vy = 2026; // current month being viewed (start = March 2026)
 var activeTab = 'overview';
-var data = { salary: 0, bills: {}, other: [] };
+var data = { salary: 0, bills: {}, other: [], extraIncome: [] };
 
 // ═══════════════════════════════════════════════════════════
 // STORAGE
@@ -340,11 +355,13 @@ function schSavedP2()   { var t=0; for(var i=SCH_P1_MTHS;i<SCH_N;i++) t+=getSchS
 //   urgency = amount_still_needed / months_left_in_period
 //   store the split as saved for that month
 function calcAll() {
-  var salary   = data.salary;
+  var salary      = data.salary;
+  var extraIncome = data.extraIncome.reduce(function(s,e){ return s+e.amt; }, 0);
+  var totalIncome = salary + extraIncome;
   var fixedExp = BILL_KEYS.reduce(function(s,k){ return s+(parseFloat(data.bills[k])||0); }, 0);
   var otherExp = data.other.reduce(function(s,e){ return s+e.amt; }, 0);
   var totalExp = fixedExp + otherExp;
-  var remaining = salary - totalExp; // can be negative
+  var remaining = totalIncome - totalExp; // can be negative
 
   // ── CAR urgency ──
   var ci = carI(vm, vy);
@@ -404,7 +421,8 @@ function calcAll() {
   if (si !== null) setSchSave(si, Math.max(0, schSave));
 
   return {
-    salary: salary, fixedExp: fixedExp, otherExp: otherExp,
+    salary: salary, extraIncome: extraIncome, totalIncome: totalIncome,
+    fixedExp: fixedExp, otherExp: otherExp,
     totalExp: totalExp, remaining: remaining,
     ci: ci, si: si, isP1: isP1, isP2: isP2,
     carSave: carSave, schSave: schSave,
@@ -418,13 +436,15 @@ function calcAll() {
 // DATA LOAD / SAVE
 // ═══════════════════════════════════════════════════════════
 function loadMonth() {
-  data.salary = S.g(mkG('salary'), 0);
-  data.bills  = S.g(mk('bills'), {});
-  data.other  = S.g(mk('other'), []);
+  data.salary      = S.g(mkG('salary'), 0);
+  data.bills       = S.g(mk('bills'), {});
+  data.other       = S.g(mk('other'), []);
+  data.extraIncome = S.g(mk('extraIncome'), []);
 }
 function saveMonth() {
   S.s(mk('bills'), data.bills);
   S.s(mk('other'), data.other);
+  S.s(mk('extraIncome'), data.extraIncome);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -523,11 +543,12 @@ function renderOverview(sn) {
 
   // Summary boxes
   document.getElementById('ovSumGrid').innerHTML = [
-    { lbl:'Salary',         val:sn.salary,    col:'#16a34a', sub:'Monthly income' },
-    { lbl:'Total Expenses', val:sn.totalExp,  col:'#dc2626', sub:'Bills + Food + Other' },
-    { lbl:'Remaining',      val:sn.remaining, col:remCol,    sub:'Goes to saving plans' },
-    { lbl:'→ Car Save',     val:sn.carSave,   col:'#2563eb', sub:'This month (auto)' },
-    { lbl:'→ School Save',  val:sn.schSave,   col:'#16a34a', sub:'This month (auto)' },
+    { lbl:'Salary',         val:sn.salary,       col:'#16a34a', sub:'Monthly income' },
+    { lbl:'Extra Income',   val:sn.extraIncome,  col:'#10b981', sub:'One-time entries' },
+    { lbl:'Total Expenses', val:sn.totalExp,     col:'#dc2626', sub:'Bills + Food + Other' },
+    { lbl:'Remaining',      val:sn.remaining,    col:remCol,    sub:'Goes to saving plans' },
+    { lbl:'→ Car Save',     val:sn.carSave,      col:'#2563eb', sub:'This month (auto)' },
+    { lbl:'→ School Save',  val:sn.schSave,      col:'#16a34a', sub:'This month (auto)' },
   ].map(function(b) {
     return '<div class="sum-box" style="border-top-color:'+b.col+';">'
       + '<div class="sum-label">'+b.lbl+'</div>'
@@ -564,12 +585,13 @@ function renderOverview(sn) {
   // Breakdown rows
   var remCol2 = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
   document.getElementById('ovBreakdown').innerHTML = [
-    { lbl:'My Salary',       val:sn.salary,    col:'#16a34a', pre:'+' },
-    { lbl:'Fixed Expenses',  val:sn.fixedExp,  col:'#f97316', pre:'−' },
-    { lbl:'Other Spending',  val:sn.otherExp,  col:'#dc2626', pre:'−' },
-    { lbl:'Remaining',       val:sn.remaining, col:remCol2,   pre:'=' },
-    { lbl:'  ↳ 🚗 Car Plan', val:sn.carSave,   col:'#2563eb', pre:'' },
-    { lbl:'  ↳ 🏫 School',   val:sn.schSave,   col:'#16a34a', pre:'' },
+    { lbl:'My Salary',        val:sn.salary,       col:'#16a34a', pre:'+' },
+    { lbl:'Extra Income',     val:sn.extraIncome,  col:'#10b981', pre:'+' },
+    { lbl:'Fixed Expenses',   val:sn.fixedExp,     col:'#f97316', pre:'−' },
+    { lbl:'Other Spending',   val:sn.otherExp,     col:'#dc2626', pre:'−' },
+    { lbl:'Remaining',        val:sn.remaining,    col:remCol2,   pre:'=' },
+    { lbl:'  ↳ 🚗 Car Plan',  val:sn.carSave,      col:'#2563eb', pre:'' },
+    { lbl:'  ↳ 🏫 School',    val:sn.schSave,      col:'#16a34a', pre:'' },
   ].map(function(r) {
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:2px solid #f1f5f9;">'
       + '<span style="font-size:15px;font-weight:700;color:#475569;">'+r.lbl+'</span>'
@@ -583,8 +605,27 @@ function renderOverview(sn) {
 // ═══════════════════════════════════════════════════════════
 function renderIncome(sn) {
   document.getElementById('salaryInput').value = data.salary || '';
+
+  // Extra income list
+  var exTotal = sn.extraIncome;
+  document.getElementById('exIncTotalLbl').textContent = F(exTotal) + ' SR';
+  var exList = document.getElementById('exIncList');
+  if (!data.extraIncome.length) {
+    exList.innerHTML = '<div class="empty">No extra income this month</div>';
+  } else {
+    exList.innerHTML = '<div class="item-list">' + data.extraIncome.map(function(e) {
+      return '<div class="item-row">'
+        + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+e.desc+'</div>'
+        + '<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-top:2px;">'+e.date+'</div></div>'
+        + '<div style="display:flex;align-items:center;">'
+        + '<span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">+'+F(e.amt)+' SR</span>'
+        + '<button class="del-btn" onclick="delExtraIncome('+e.id+')">×</button></div></div>';
+    }).join('') + '</div>';
+  }
+
+  // Breakdown panel
   var el = document.getElementById('incomePanel');
-  if (!sn.salary) {
+  if (!sn.salary && !exTotal) {
     el.innerHTML = '<div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div>';
     return;
   }
@@ -593,7 +634,9 @@ function renderIncome(sn) {
   var remBc  = sn.remaining >= 0 ? '#bbf7d0' : '#fecaca';
 
   el.innerHTML =
-    row('💰 Salary', 'Your monthly income', sn.salary, '#16a34a') +
+    row('💰 Salary', 'Your monthly salary', sn.salary, '#16a34a') +
+    (exTotal > 0 ? row('➕ Extra Income', data.extraIncome.length+' entr'+(data.extraIncome.length===1?'y':'ies')+' this month', exTotal, '#10b981') : '') +
+    (exTotal > 0 ? row('📥 Total Income', 'Salary + extra', sn.totalIncome, '#16a34a') : '') +
     row('📋 Total Expenses', 'Bills + Food + Other spending', sn.totalExp, '#dc2626') +
     '<div style="margin:14px 0;background:'+remBg+';border:2px solid '+remBc+';border-radius:13px;padding:15px 17px;">'
       + '<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:'+remCol+';margin-bottom:5px;">Remaining After Expenses</div>'
@@ -601,7 +644,7 @@ function renderIncome(sn) {
       + '<div style="font-size:12px;font-weight:700;color:'+remCol+';margin-top:5px;">'
         + (sn.remaining > 0 ? 'Auto-split between 🚗 Car Plan &amp; 🏫 School Fees by deadline urgency'
          : sn.remaining === 0 ? 'Nothing left — plans get 0 this month'
-         : 'Expenses exceed salary — review spending')
+         : 'Expenses exceed total income — review spending')
       + '</div></div>'
     + (sn.remaining > 0 ? splitBox(sn) : '');
 }
@@ -632,7 +675,7 @@ function splitBox(sn) {
 // ═══════════════════════════════════════════════════════════
 function renderExpenses(sn) {
   // Status card at top
-  var pct = sn.salary > 0 ? Math.min(100, Math.round(sn.totalExp / sn.salary * 100)) : 0;
+  var pct = sn.totalIncome > 0 ? Math.min(100, Math.round(sn.totalExp / sn.totalIncome * 100)) : 0;
   var bCol = pct < 70 ? '#16a34a' : pct < 90 ? '#d97706' : '#dc2626';
   var bBg  = pct < 70 ? '#f0fdf4' : pct < 90 ? '#fffbeb' : '#fef2f2';
   var bBc  = pct < 70 ? '#bbf7d0' : pct < 90 ? '#fde68a' : '#fecaca';
@@ -912,8 +955,27 @@ function renderSchool(sn) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// OTHER SPENDING
+// EXTRA INCOME
 // ═══════════════════════════════════════════════════════════
+function addExtraIncome() {
+  var desc = document.getElementById('exIncDesc').value.trim();
+  var amt  = parseFloat(document.getElementById('exIncAmt').value);
+  var err  = document.getElementById('exIncErr');
+  if (!desc) { err.textContent = 'Enter a description'; err.style.display = 'block'; return; }
+  if (!amt || amt <= 0) { err.textContent = 'Enter a valid amount'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  data.extraIncome.unshift({ id: Date.now(), desc: desc, amt: amt, date: today() });
+  saveMonth();
+  document.getElementById('exIncDesc').value = '';
+  document.getElementById('exIncAmt').value  = '';
+  render();
+}
+function delExtraIncome(id) {
+  data.extraIncome = data.extraIncome.filter(function(x){ return x.id !== id; });
+  saveMonth(); render();
+}
+
+
 function addOther() {
   var desc = document.getElementById('othDesc').value.trim();
   var amt  = parseFloat(document.getElementById('othAmt').value);
@@ -934,6 +996,7 @@ function delOther(id) {
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && activeTab === 'expenses') addOther();
+  if (e.key === 'Enter' && activeTab === 'income')   addExtraIncome();
 });
 
 loadMonth();
