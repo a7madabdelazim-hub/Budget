@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -101,6 +102,7 @@ select.add-input{background:#f8fafc;}
   <div id="alertBox" style="display:none;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;line-height:1.6;"></div>
 
   <!-- ══ OVERVIEW ══ -->
+
   <div id="tab-overview">
     <div class="sum-grid" id="ovSumGrid"></div>
     <div class="card" id="ovProgressCard"></div>
@@ -111,6 +113,7 @@ select.add-input{background:#f8fafc;}
   </div>
 
   <!-- ══ INCOME ══ -->
+
   <div id="tab-income" style="display:none">
     <div class="card">
       <div class="card-title">Monthly Salary</div>
@@ -126,81 +129,89 @@ select.add-input{background:#f8fafc;}
       </div>
     </div>
 
-    <div class="card" style="border:2px solid #bbf7d0;">
-      <div class="card-title" style="color:#16a34a;">Extra Income</div>
-      <div class="add-row">
-        <input class="add-input" id="exIncDesc" placeholder="Description (e.g. Freelance, Bonus...)"/>
-        <input class="add-input" type="number" id="exIncAmt" placeholder="Amount SR" style="flex:0 1 120px;font-family:'Courier New',monospace;font-weight:800;"/>
-        <button class="add-btn" style="background:#16a34a;" onclick="addExtraIncome()">+ Add</button>
-      </div>
-      <div id="exIncErr" style="color:#dc2626;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
-        <span style="font-size:13px;font-weight:800;color:#475569;">Total Extra This Month</span>
-        <span id="exIncTotalLbl" style="font-size:18px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;">0 SR</span>
-      </div>
-      <div id="exIncList"></div>
-    </div>
+```
+<div class="card" style="border:2px solid #bbf7d0;">
+  <div class="card-title" style="color:#16a34a;">Extra Income</div>
+  <div class="add-row">
+    <input class="add-input" id="exIncDesc" placeholder="Description (e.g. Freelance, Bonus...)"/>
+    <input class="add-input" type="number" id="exIncAmt" placeholder="Amount SR" style="flex:0 1 120px;font-family:'Courier New',monospace;font-weight:800;"/>
+    <button class="add-btn" style="background:#16a34a;" onclick="addExtraIncome()">+ Add</button>
+  </div>
+  <div id="exIncErr" style="color:#dc2626;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
+    <span style="font-size:13px;font-weight:800;color:#475569;">Total Extra This Month</span>
+    <span id="exIncTotalLbl" style="font-size:18px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;">0 SR</span>
+  </div>
+  <div id="exIncList"></div>
+</div>
 
-    <div class="card" style="border:2px solid #e9d5ff;background:#fdf4ff;">
-      <div class="card-title" style="color:#7c3aed;">📊 Your Money — This Month</div>
-      <div id="incomePanel"><div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div></div>
-    </div>
+<div class="card" style="border:2px solid #e9d5ff;background:#fdf4ff;">
+  <div class="card-title" style="color:#7c3aed;">📊 Your Money — This Month</div>
+  <div id="incomePanel"><div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div></div>
+</div>
+```
+
   </div>
 
   <!-- ══ EXPENSES ══ -->
+
   <div id="tab-expenses" style="display:none">
 
-    <div id="expStatusCard" class="card" style="border:2px solid #e2e8f0;"></div>
+```
+<div id="expStatusCard" class="card" style="border:2px solid #e2e8f0;"></div>
 
-    <div class="card">
-      <div class="card-title">Fixed Monthly Expenses</div>
-      <div class="exp-row"><div><div class="exp-name">Family Support</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_family" placeholder="0" oninput="setBill('family',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Car Lease</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_car" placeholder="0" oninput="setBill('car',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Mobile Bill</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_mobile" placeholder="0" oninput="setBill('mobile',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Home Rent</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_rent" placeholder="0" oninput="setBill('rent',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Home Internet</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_internet" placeholder="0" oninput="setBill('internet',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Tabby</div><div class="exp-sub">Installment</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tabby" placeholder="0" oninput="setBill('tabby',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Tamara</div><div class="exp-sub">Installment</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tamara" placeholder="0" oninput="setBill('tamara',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Credit Card</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_credit" placeholder="0" oninput="setBill('credit',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Food</div><div class="exp-sub">Monthly food budget</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_food" placeholder="0" oninput="setBill('food',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:13px;margin-top:2px;border-top:2px solid #f1f5f9;">
-        <span style="font-size:15px;font-weight:800;color:#475569;">Total Fixed</span>
-        <span id="fixedTotalLbl" style="font-size:21px;font-weight:900;color:#f97316;font-family:'Courier New',monospace;"></span>
-      </div>
-    </div>
+<div class="card">
+  <div class="card-title">Fixed Monthly Expenses</div>
+  <div class="exp-row"><div><div class="exp-name">Family Support</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_family" placeholder="0" oninput="setBill('family',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Car Lease</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_car" placeholder="0" oninput="setBill('car',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Mobile Bill</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_mobile" placeholder="0" oninput="setBill('mobile',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Home Rent</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_rent" placeholder="0" oninput="setBill('rent',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Home Internet</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_internet" placeholder="0" oninput="setBill('internet',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Tabby</div><div class="exp-sub">Installment</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tabby" placeholder="0" oninput="setBill('tabby',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Tamara</div><div class="exp-sub">Installment</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tamara" placeholder="0" oninput="setBill('tamara',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Credit Card</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_credit" placeholder="0" oninput="setBill('credit',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div class="exp-row"><div><div class="exp-name">Food</div><div class="exp-sub">Monthly food budget</div></div>
+    <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_food" placeholder="0" oninput="setBill('food',this.value)"/><span class="exp-sr">SR</span></div></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding-top:13px;margin-top:2px;border-top:2px solid #f1f5f9;">
+    <span style="font-size:15px;font-weight:800;color:#475569;">Total Fixed</span>
+    <span id="fixedTotalLbl" style="font-size:21px;font-weight:900;color:#f97316;font-family:'Courier New',monospace;"></span>
+  </div>
+</div>
 
-    <div class="card">
-      <div class="card-title">Other Spending</div>
-      <div class="add-row">
-        <input class="add-input" id="othDesc" placeholder="Description..."/>
-        <select class="add-input" id="othCat" style="flex:0 1 130px;">
-          <option>Shopping</option><option>Health</option><option>Entertainment</option>
-          <option>Clothing</option><option>Transport</option><option>Other</option>
-        </select>
-        <input class="add-input" type="number" id="othAmt" placeholder="Amount SR" style="flex:0 1 110px;font-family:'Courier New',monospace;font-weight:800;"/>
-        <button class="add-btn" onclick="addOther()">+ Add</button>
-      </div>
-      <div id="othErr" style="color:#dc2626;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
-        <span style="font-size:13px;font-weight:800;color:#475569;">Other Total</span>
-        <span id="othTotalLbl" style="font-size:18px;font-weight:900;color:#f97316;font-family:'Courier New',monospace;"></span>
-      </div>
-      <div id="othList"></div>
-    </div>
+<div class="card">
+  <div class="card-title">Other Spending</div>
+  <div class="add-row">
+    <input class="add-input" id="othDesc" placeholder="Description..."/>
+    <select class="add-input" id="othCat" style="flex:0 1 130px;">
+      <option>Shopping</option><option>Health</option><option>Entertainment</option>
+      <option>Clothing</option><option>Transport</option><option>Other</option>
+    </select>
+    <input class="add-input" type="number" id="othAmt" placeholder="Amount SR" style="flex:0 1 110px;font-family:'Courier New',monospace;font-weight:800;"/>
+    <button class="add-btn" onclick="addOther()">+ Add</button>
+  </div>
+  <div id="othErr" style="color:#dc2626;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
+    <span style="font-size:13px;font-weight:800;color:#475569;">Other Total</span>
+    <span id="othTotalLbl" style="font-size:18px;font-weight:900;color:#f97316;font-family:'Courier New',monospace;"></span>
+  </div>
+  <div id="othList"></div>
+</div>
 
-    <div id="expRemainingCard" class="card" style="border:2px solid #e9d5ff;background:#fdf4ff;"></div>
+<div id="expRemainingCard" class="card" style="border:2px solid #e9d5ff;background:#fdf4ff;"></div>
+```
+
   </div>
 
   <!-- ══ CAR PLAN ══ -->
+
   <div id="tab-car" style="display:none">
     <div class="plan-hero car-hero-bg">
       <div class="hero-title">🚗 Car Ownership Plan — SNB Bank</div>
@@ -208,25 +219,29 @@ select.add-input{background:#f8fafc;}
       <div class="hero-sub" id="carHeroSub">Total to save by February 2030</div>
     </div>
 
-    <div class="sum-grid" id="carStatGrid"></div>
+```
+<div class="sum-grid" id="carStatGrid"></div>
 
-    <div class="card">
-      <div id="carProgressSection"></div>
-      <div id="carAlertBox" class="info-box" style="margin-bottom:0;"></div>
-    </div>
+<div class="card">
+  <div id="carProgressSection"></div>
+  <div id="carAlertBox" class="info-box" style="margin-bottom:0;"></div>
+</div>
 
-    <div class="card" style="border:2px solid #dbeafe;">
-      <div class="card-title" style="color:#2563eb;">This Month — Auto Saving</div>
-      <div id="carThisMonth"></div>
-    </div>
+<div class="card" style="border:2px solid #dbeafe;">
+  <div class="card-title" style="color:#2563eb;">This Month — Auto Saving</div>
+  <div id="carThisMonth"></div>
+</div>
 
-    <div class="card">
-      <div class="card-title">Month-by-Month Schedule</div>
-      <div id="carSchedule"></div>
-    </div>
+<div class="card">
+  <div class="card-title">Month-by-Month Schedule</div>
+  <div id="carSchedule"></div>
+</div>
+```
+
   </div>
 
   <!-- ══ SCHOOL FEES ══ -->
+
   <div id="tab-school" style="display:none">
     <div class="plan-hero sch-hero-bg">
       <div class="hero-title">🏫 School Fees Plan</div>
@@ -234,27 +249,30 @@ select.add-input{background:#f8fafc;}
       <div class="hero-sub" id="schHeroSub">P1: 2,000 SR (Aug 2026) + P2: 1,500 SR (Feb 2027)</div>
     </div>
 
-    <div class="card" style="background:#f0fdf4;border:2px solid #bbf7d0;">
-      <div class="card-title" style="color:#16a34a;">Payment Deadlines</div>
-      <div id="schPayInfo"></div>
-    </div>
+```
+<div class="card" style="background:#f0fdf4;border:2px solid #bbf7d0;">
+  <div class="card-title" style="color:#16a34a;">Payment Deadlines</div>
+  <div id="schPayInfo"></div>
+</div>
 
-    <div class="sum-grid" id="schStatGrid"></div>
+<div class="sum-grid" id="schStatGrid"></div>
 
-    <div class="card">
-      <div id="schProgressSection"></div>
-      <div id="schAlertBox" class="info-box" style="margin-bottom:0;"></div>
-    </div>
+<div class="card">
+  <div id="schProgressSection"></div>
+  <div id="schAlertBox" class="info-box" style="margin-bottom:0;"></div>
+</div>
 
-    <div class="card" style="border:2px solid #bbf7d0;">
-      <div class="card-title" style="color:#16a34a;">This Month — Auto Saving</div>
-      <div id="schThisMonth"></div>
-    </div>
+<div class="card" style="border:2px solid #bbf7d0;">
+  <div class="card-title" style="color:#16a34a;">This Month — Auto Saving</div>
+  <div id="schThisMonth"></div>
+</div>
 
-    <div class="card">
-      <div class="card-title">Full Saving Schedule</div>
-      <div id="schSchedule"></div>
-    </div>
+<div class="card">
+  <div class="card-title">Full Saving Schedule</div>
+  <div id="schSchedule"></div>
+</div>
+```
+
   </div>
 
 </div><!-- end .main -->
@@ -267,69 +285,49 @@ var MN = ["January","February","March","April","May","June","July","August","Sep
 var MS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var BILL_KEYS = ['family','car','mobile','rent','internet','tabby','tamara','credit','food'];
 
-// Car Plan: April 2026 (m=3) → February 2030 (m=1), 47 months
 var CAR_TOTAL   = 42525;
-var CAR_START_M = 3;   // April index
+var CAR_START_M = 3;
 var CAR_START_Y = 2026;
-var CAR_END_M   = 1;   // February index
+var CAR_END_M   = 1;
 var CAR_END_Y   = 2030;
-var CAR_N       = 47;  // total months
+var CAR_N       = 47;
 
-// School Fees: full payment schedule
-// Aug starts at 2000, +500 each year. Feb starts at 1500, +500 each year.
-// Last payment: Feb 2035
-// Saving period: month after last payment → month before next deadline
-// Build the payment list dynamically
 var SCH_PAYMENTS = (function() {
   var list = [];
   var augAmt = 2000, febAmt = 1500;
-  // Pairs per school year: Aug then Feb
-  // Year 1: Aug 2026 (2000), Feb 2027 (1500)
-  // Year 2: Aug 2027 (2500), Feb 2028 (2000)
-  // ...until Feb 2035
   var y = 2026;
   while (true) {
-    // Aug payment
     list.push({ m: 7, y: y, amt: augAmt });
     augAmt += 500;
-    // Feb payment (next calendar year)
     var fy = y + 1;
     list.push({ m: 1, y: fy, amt: febAmt });
     febAmt += 500;
-    if (fy >= 2035) break; // Feb 2035 is the last
+    if (fy >= 2035) break;
     y++;
   }
   return list;
 })();
 
-// For each payment, compute its saving window:
-// First payment (Aug 2026): save Mar 2026 – Jul 2026
-// Each subsequent: save from month after previous payment → month before deadline
 var SCH_WINDOWS = (function() {
   var wins = [];
   for (var i = 0; i < SCH_PAYMENTS.length; i++) {
     var p = SCH_PAYMENTS[i];
     var startM, startY;
     if (i === 0) {
-      // First payment: start saving March 2026
       startM = 2; startY = 2026;
     } else {
-      // Start month after previous payment
       var prev = SCH_PAYMENTS[i-1];
       startM = prev.m + 1; startY = prev.y;
       if (startM > 11) { startM = 0; startY++; }
     }
-    // End: month before payment deadline
     var endM = p.m - 1; var endY = p.y;
     if (endM < 0) { endM = 11; endY--; }
-    // Count months in window
     var nMonths = (endY - startY) * 12 + (endM - startM) + 1;
     wins.push({ startM: startM, startY: startY, endM: endM, endY: endY, n: Math.max(1, nMonths) });
   }
   return wins;
 })();
 
-// Given a calendar month (m,y), return which payment index it belongs to (saving window), or null
 function schPaymentFor(m, y) {
   for (var i = 0; i < SCH_PAYMENTS.length; i++) {
     var w = SCH_WINDOWS[i];
@@ -340,16 +338,13 @@ function schPaymentFor(m, y) {
   }
   return null;
 }
-// Month index within a payment's saving window
 function schMonthOffset(m, y, pi) {
   var w = SCH_WINDOWS[pi];
   return (y - w.startY) * 12 + (m - w.startM);
 }
-// Storage key per payment per month-offset
 function schSaveKey(pi, offset) { return 'sch7_'+pi+'_'+offset; }
 function getSchSaveP(pi, offset) { return S.g(schSaveKey(pi, offset), 0); }
 function setSchSaveP(pi, offset, v) { S.s(schSaveKey(pi, offset), v); }
-// Total saved toward payment pi
 function schTotalSavedFor(pi) {
   var t = 0, w = SCH_WINDOWS[pi];
   for (var o = 0; o < w.n; o++) t += getSchSaveP(pi, o);
@@ -359,7 +354,7 @@ function schTotalSavedFor(pi) {
 // ═══════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════
-var vm = 2, vy = 2026; // current month being viewed (start = March 2026)
+var vm = 2, vy = 2026;
 var activeTab = 'overview';
 var data = { salary: 0, bills: {}, other: [], extraIncome: [] };
 
@@ -377,7 +372,12 @@ var S = (function(){
 function mk(s)  { return 'bp6_'+vy+'_'+vm+'_'+s; }
 function mkG(s) { return 'bp6_g_'+s; }
 
-// ─── Number helpers ───────────────────────────────────────
+// ─── Keys for storing the committed split per month ────────
+// These are written ONCE when user has salary+expenses, then read back.
+function carSaveKey(i)     { return 'car6_'+i; }
+function carSaveLockKey(i) { return 'car6_lock_'+i; }  // "has this month been committed?"
+function schSaveLockKey(pi, offset) { return 'sch7_lock_'+pi+'_'+offset; }
+
 function R(n)   { return Math.round(n); }
 function F(n)   { return Number(Math.abs(R(n))).toLocaleString(); }
 function today(){ var d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); }
@@ -385,7 +385,6 @@ function today(){ var d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+
 // ═══════════════════════════════════════════════════════════
 // CAR PLAN HELPERS
 // ═══════════════════════════════════════════════════════════
-// Returns 0-based month index for car plan (0=Apr2026 … 46=Feb2030), or null if outside
 function carI(m, y) {
   var i = (y - CAR_START_Y) * 12 + (m - CAR_START_M);
   return (i >= 0 && i < CAR_N) ? i : null;
@@ -394,9 +393,8 @@ function carMonthOf(i) {
   var t = CAR_START_M + i;
   return { m: t % 12, y: CAR_START_Y + Math.floor(t / 12) };
 }
-// How much has been auto-saved for car at month index i
-function getCarSave(i)  { return S.g('car6_'+i, 0); }
-function setCarSave(i,v){ S.s('car6_'+i, v); }
+function getCarSave(i)  { return S.g(carSaveKey(i), 0); }
+function setCarSave(i,v){ S.s(carSaveKey(i), v); }
 function totalCarSaved() {
   var t = 0;
   for (var i = 0; i < CAR_N; i++) t += getCarSave(i);
@@ -404,50 +402,54 @@ function totalCarSaved() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// CORE CALCULATION
+// CORE CALCULATION  ← THE FIX IS HERE
 // ═══════════════════════════════════════════════════════════
-// For a given month (vm,vy):
-//   remaining = salary - expenses
-//   split remaining → car & school by urgency ratio
-//   urgency = amount_still_needed / months_left_in_period
-//   store the split as saved for that month
-function calcAll() {
+// calcAll() now has TWO modes:
+//   persist=false  → pure read/display, never writes to storage  (used by render)
+//   persist=true   → writes the split to storage                 (used only when user changes data)
+//
+// The rule: if a month already has a committed split stored, we
+// read that value and don't overwrite it. This means closing and
+// reopening the app never inflates the saved totals.
+// ─────────────────────────────────────────────────────────
+function calcAll(persist) {
   var salary      = data.salary;
   var extraIncome = data.extraIncome.reduce(function(s,e){ return s+e.amt; }, 0);
   var totalIncome = salary + extraIncome;
   var fixedExp = BILL_KEYS.reduce(function(s,k){ return s+(parseFloat(data.bills[k])||0); }, 0);
   var otherExp = data.other.reduce(function(s,e){ return s+e.amt; }, 0);
   var totalExp = fixedExp + otherExp;
-  var remaining = totalIncome - totalExp; // can be negative
+  var remaining = totalIncome - totalExp;
 
-  // ── CAR urgency ──
   var ci = carI(vm, vy);
-  var carSavedSoFar = totalCarSaved();
-  // Don't double-count this month if already stored
-  if (ci !== null) carSavedSoFar -= getCarSave(ci);
-  var carStillNeeded = Math.max(0, CAR_TOTAL - carSavedSoFar);
-  // Months left INCLUDING this month
-  var carMonthsLeft = ci !== null ? Math.max(1, CAR_N - ci) : 0;
-  var carUrgency    = carMonthsLeft > 0 ? carStillNeeded / carMonthsLeft : 0;
-  // Minimum this month to stay on track (recalculated dynamically)
-  var carMinNeeded  = carMonthsLeft > 0 ? carStillNeeded / carMonthsLeft : 0;
+  var pi = schPaymentFor(vm, vy);
 
-  // ── SCHOOL urgency ──
-  var pi = schPaymentFor(vm, vy); // which payment period are we in?
-  var schSave = 0, schMinNeeded = 0, schMonthsLeft = 0, schStillNeeded = 0;
+  // ── Read already-stored values for THIS month ──────────
+  var storedCarSave = ci !== null ? getCarSave(ci) : 0;
+  var storedSchSave = pi !== null ? getSchSaveP(pi, schMonthOffset(vm, vy, pi)) : 0;
+
+  // ── Totals saved EXCLUDING this month's slot ───────────
+  var carSavedExThis = totalCarSaved() - storedCarSave;
+  var schSavedExThis = pi !== null ? schTotalSavedFor(pi) - storedSchSave : 0;
+
+  // ── Urgency calculations ───────────────────────────────
+  var carStillNeeded = Math.max(0, CAR_TOTAL - carSavedExThis);
+  var carMonthsLeft  = ci !== null ? Math.max(1, CAR_N - ci) : 0;
+  var carMinNeeded   = carMonthsLeft > 0 ? carStillNeeded / carMonthsLeft : 0;
+  var carUrgency     = carMinNeeded;
+
+  var schStillNeeded = 0, schMonthsLeft = 0, schMinNeeded = 0, schUrgency = 0;
   if (pi !== null) {
     var w        = SCH_WINDOWS[pi];
     var offset   = schMonthOffset(vm, vy, pi);
-    var savedSoFar = schTotalSavedFor(pi) - getSchSaveP(pi, offset); // exclude this month
-    schStillNeeded = Math.max(0, SCH_PAYMENTS[pi].amt - savedSoFar);
+    schStillNeeded = Math.max(0, SCH_PAYMENTS[pi].amt - schSavedExThis);
     schMonthsLeft  = Math.max(1, w.n - offset);
     schMinNeeded   = schStillNeeded / schMonthsLeft;
+    schUrgency     = schMinNeeded;
   }
-  var schUrgency = schMonthsLeft > 0 ? schStillNeeded / schMonthsLeft : 0;
 
-  // ── Split remaining by urgency ──
-  var carSave = 0;
-  schSave = 0;
+  // ── Split remaining by urgency ─────────────────────────
+  var carSave = 0, schSave = 0;
   if (remaining > 0) {
     var totalUrgency = carUrgency + schUrgency;
     if (totalUrgency > 0) {
@@ -460,11 +462,21 @@ function calcAll() {
     }
   }
 
-  // Store the auto-split values
-  if (ci !== null) setCarSave(ci, Math.max(0, carSave));
-  if (pi !== null) {
-    var off2 = schMonthOffset(vm, vy, pi);
-    setSchSaveP(pi, off2, Math.max(0, schSave));
+  // ── Only write to storage when explicitly told to ──────
+  // This is the core fix: render() calls calcAll(false), so it
+  // NEVER writes. Only setSalary/setBill/addOther/delOther etc.
+  // call calcAll(true) via saveAndRender().
+  if (persist) {
+    if (ci !== null) setCarSave(ci, Math.max(0, carSave));
+    if (pi !== null) {
+      var off2 = schMonthOffset(vm, vy, pi);
+      setSchSaveP(pi, off2, Math.max(0, schSave));
+    }
+  } else {
+    // In display-only mode, show stored values if they exist,
+    // otherwise show the computed split so new users still see numbers.
+    if (ci !== null && storedCarSave > 0) carSave = storedCarSave;
+    if (pi !== null && storedSchSave > 0) schSave = storedSchSave;
   }
 
   return {
@@ -494,6 +506,14 @@ function saveMonth() {
   S.s(mk('extraIncome'), data.extraIncome);
 }
 
+// saveAndRender: called whenever the user changes income/expenses.
+// This is the ONLY path that commits the new split to storage.
+function saveAndRender() {
+  saveMonth();
+  calcAll(true);   // persist the new split
+  render();        // render reads back stored values (persist=false)
+}
+
 // ═══════════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════════
@@ -521,20 +541,19 @@ function changeMonth(d) {
 function setSalary(v) {
   data.salary = parseFloat(v) || 0;
   S.s(mkG('salary'), data.salary);
-  render();
+  saveAndRender();
 }
 function setBill(k, v) {
   data.bills[k] = parseFloat(v) || 0;
-  saveMonth(); render();
+  saveAndRender();
 }
 
 // ═══════════════════════════════════════════════════════════
-// MASTER RENDER
+// MASTER RENDER  ← calls calcAll(false) — never writes storage
 // ═══════════════════════════════════════════════════════════
 function render() {
-  var sn = calcAll();
+  var sn = calcAll(false);  // read-only: never inflates stored savings
 
-  // Month bar
   document.getElementById('monthTitle').textContent = MN[vm] + ' ' + vy;
   var ci2 = carI(vm, vy), pi2 = schPaymentFor(vm, vy);
   var metaParts = [];
@@ -549,7 +568,6 @@ function render() {
   var badge = document.getElementById('monthBadge');
   badge.textContent = MS[vm] + ' ' + vy;
 
-  // Global alert
   var ab = document.getElementById('alertBox');
   if (!sn.salary) {
     ab.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#d97706;display:flex;gap:10px;line-height:1.5;';
@@ -586,7 +604,6 @@ function renderOverview(sn) {
   for (var i = 0; i < SCH_PAYMENTS.length; i++) totalSchSaved += schTotalSavedFor(i);
   var schOverallPct  = totalSchNeeded > 0 ? Math.min(100, Math.round(totalSchSaved / totalSchNeeded * 100)) : 0;
 
-  // Active school payment
   var activePiOv = null;
   for (var i = 0; i < SCH_PAYMENTS.length; i++) {
     if (schTotalSavedFor(i) < SCH_PAYMENTS[i].amt) { activePiOv = i; break; }
@@ -597,12 +614,9 @@ function renderOverview(sn) {
   var remCol   = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
 
   var carPct = Math.min(100, Math.round(carSaved / CAR_TOTAL * 100));
-
-  // Completed car months
   var carDone = 0;
   for (var i = 0; i < CAR_N; i++) if (getCarSave(i) > 0) carDone++;
 
-  // Summary boxes
   document.getElementById('ovSumGrid').innerHTML = [
     { lbl:'Salary',         val:sn.salary,       col:'#16a34a', sub:'Monthly income' },
     { lbl:'Extra Income',   val:sn.extraIncome,  col:'#10b981', sub:'One-time entries' },
@@ -617,7 +631,6 @@ function renderOverview(sn) {
       + '<div class="sum-sub">'+b.sub+'</div></div>';
   }).join('');
 
-  // Progress bars
   var pc = '';
   pc += '<div class="pbar-wrap">'
     + '<div class="pbar-label"><span>🚗 Car Plan</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+carPct+'%</span></div>'
@@ -639,7 +652,6 @@ function renderOverview(sn) {
   }
   document.getElementById('ovProgressCard').innerHTML = pc;
 
-  // Breakdown rows
   var remCol2 = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
   document.getElementById('ovBreakdown').innerHTML = [
     { lbl:'My Salary',        val:sn.salary,       col:'#16a34a', pre:'+' },
@@ -663,7 +675,6 @@ function renderOverview(sn) {
 function renderIncome(sn) {
   document.getElementById('salaryInput').value = data.salary || '';
 
-  // Extra income list
   var exTotal = sn.extraIncome;
   document.getElementById('exIncTotalLbl').textContent = F(exTotal) + ' SR';
   var exList = document.getElementById('exIncList');
@@ -680,7 +691,6 @@ function renderIncome(sn) {
     }).join('') + '</div>';
   }
 
-  // Breakdown panel
   var el = document.getElementById('incomePanel');
   if (!sn.salary && !exTotal) {
     el.innerHTML = '<div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div>';
@@ -731,7 +741,6 @@ function splitBox(sn) {
 // EXPENSES TAB
 // ═══════════════════════════════════════════════════════════
 function renderExpenses(sn) {
-  // Status card at top
   var pct = sn.totalIncome > 0 ? Math.min(100, Math.round(sn.totalExp / sn.totalIncome * 100)) : 0;
   var bCol = pct < 70 ? '#16a34a' : pct < 90 ? '#d97706' : '#dc2626';
   var bBg  = pct < 70 ? '#f0fdf4' : pct < 90 ? '#fffbeb' : '#fef2f2';
@@ -745,7 +754,6 @@ function renderExpenses(sn) {
     + '<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+bCol+';"></div></div>'
     + '<div style="font-size:11px;font-weight:700;color:'+bCol+';margin-top:5px;text-align:right;">'+pct+'% of salary used on expenses</div>';
 
-  // Fill fixed inputs
   BILL_KEYS.forEach(function(k) {
     var el = document.getElementById('b_'+k);
     if (el) el.value = data.bills[k] || '';
@@ -753,7 +761,6 @@ function renderExpenses(sn) {
   document.getElementById('fixedTotalLbl').textContent = F(sn.fixedExp) + ' SR';
   document.getElementById('othTotalLbl').textContent   = F(sn.otherExp) + ' SR';
 
-  // Other list
   var list = document.getElementById('othList');
   if (!data.other.length) {
     list.innerHTML = '<div class="empty">No other spending logged</div>';
@@ -768,7 +775,6 @@ function renderExpenses(sn) {
     }).join('') + '</div>';
   }
 
-  // Remaining card
   var remCol = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
   var remBg  = sn.remaining >= 0 ? '#f0fdf4' : '#fef2f2';
   var remBc  = sn.remaining >= 0 ? '#bbf7d0' : '#fecaca';
@@ -799,19 +805,19 @@ function renderCar(sn) {
   var pct      = Math.min(100, Math.round(carSaved / CAR_TOTAL * 100));
   var ci       = sn.ci;
 
-  // Months done
   var carDone = 0;
   for (var i = 0; i < CAR_N; i++) if (getCarSave(i) > 0) carDone++;
 
-  // Current month info
-  var mLeft       = ci !== null ? Math.max(0, CAR_N - ci) : 0;
-  var minNeeded   = mLeft > 0 ? carRem / mLeft : 0; // recalculated each month
-  var thisMonthSave = ci !== null ? getCarSave(ci) : 0;
+  var mLeft         = ci !== null ? Math.max(0, CAR_N - ci) : 0;
+  var storedCarThis = ci !== null ? getCarSave(ci) : 0;
+  var carSavedExThis = carSaved - storedCarThis;
+  var carRemExThis   = Math.max(0, CAR_TOTAL - carSavedExThis);
+  var minNeeded      = mLeft > 0 ? carRemExThis / mLeft : 0;
+  var thisMonthSave  = sn.carSave;
 
   document.getElementById('carHeroAmount').textContent = F(carRem) + ' SR';
   document.getElementById('carHeroSub').textContent    = F(carSaved) + ' SR saved · ' + F(carRem) + ' SR remaining · Due Feb 2030';
 
-  // Stat grid
   document.getElementById('carStatGrid').innerHTML = [
     { lbl:'Total Saved',    val:F(carSaved)+' SR',    col:'#16a34a', sub:'out of '+F(CAR_TOTAL)+' SR' },
     { lbl:'Months Done',    val:carDone+' / 47',      col:'#2563eb', sub:'months completed' },
@@ -823,14 +829,12 @@ function renderCar(sn) {
       + '<div class="sum-sub">'+s.sub+'</div></div>';
   }).join('');
 
-  // Progress
   document.getElementById('carProgressSection').innerHTML =
     '<div class="pbar-label"><span>Ownership Progress</span>'
     + '<span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+pct+'%</span></div>'
     + '<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:#2563eb;"></div></div>'
     + '<div class="pbar-sub" style="margin-bottom:12px;">'+F(carSaved)+' SR saved · '+carDone+' of 47 months done</div>';
 
-  // Alert
   var ca = document.getElementById('carAlertBox');
   if (ci === null) {
     ca.style.cssText = 'background:#f1f5f9;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:0;display:flex;gap:8px;';
@@ -846,7 +850,6 @@ function renderCar(sn) {
     ca.innerHTML = '<span>!</span> No car saving this month. Minimum needed: <strong>'+F(minNeeded)+' SR</strong>. Add expenses and salary so the app can auto-split.';
   }
 
-  // This month card
   document.getElementById('carThisMonth').innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
       + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed to stay on track</div>'
@@ -861,9 +864,8 @@ function renderCar(sn) {
         '<div style="margin-top:12px;background:#eff6ff;border-radius:10px;padding:10px 14px;">'
         + '<div style="font-size:11px;font-weight:700;color:#94a3b8;">After this month: '+F(Math.max(0,carRem-thisMonthSave))+' SR remaining over '+(mLeft-1)+' months</div></div>');
 
-  // Schedule (current + next 11 months)
   var sch = '', runRem = carRem, runM = mLeft;
-  var startI = ci !== null ? ci : carI(2, 2026) || 0; // default to first active
+  var startI = ci !== null ? ci : carI(2, 2026) || 0;
   var count = 0;
   for (var j = startI; j < CAR_N && count < 12; j++, count++) {
     var mo    = carMonthOf(j);
@@ -889,14 +891,12 @@ function renderCar(sn) {
 // SCHOOL FEES TAB
 // ═══════════════════════════════════════════════════════════
 function renderSchool(sn) {
-  var pi = sn.pi; // current active payment index (null if not in saving window)
+  var pi = sn.pi;
 
-  // Find current and next payment
   var activePi  = pi !== null ? pi : findCurrentOrNextPayment();
   var nextPi    = activePi !== null && activePi + 1 < SCH_PAYMENTS.length ? activePi + 1 : null;
 
   function findCurrentOrNextPayment() {
-    // Find the next upcoming payment that isn't fully saved yet
     for (var i = 0; i < SCH_PAYMENTS.length; i++) {
       var saved = schTotalSavedFor(i);
       if (saved < SCH_PAYMENTS[i].amt) return i;
@@ -904,20 +904,16 @@ function renderSchool(sn) {
     return SCH_PAYMENTS.length > 0 ? SCH_PAYMENTS.length - 1 : null;
   }
 
-  // Total across all payments
   var totalNeeded = SCH_PAYMENTS.reduce(function(s,p){ return s+p.amt; }, 0);
   var totalSaved  = 0;
   for (var i = 0; i < SCH_PAYMENTS.length; i++) totalSaved += schTotalSavedFor(i);
   var totalLeft   = totalNeeded - totalSaved;
 
-  // Hero
   document.getElementById('schHeroAmount').textContent = F(totalLeft) + ' SR';
-  var lastP = SCH_PAYMENTS[SCH_PAYMENTS.length-1];
   document.getElementById('schHeroSub').textContent =
     totalSaved > 0 ? F(totalSaved)+' SR saved of '+F(totalNeeded)+' SR total · Last payment Feb 2035'
     : 'Total across all payments · Last payment Feb 2035';
 
-  // Payment info — current + next only
   function payCard(pIdx, label) {
     if (pIdx === null || pIdx >= SCH_PAYMENTS.length) return '';
     var p    = SCH_PAYMENTS[pIdx];
@@ -955,13 +951,9 @@ function renderSchool(sn) {
     payCard(activePi, 'Payment '+(activePi!==null?activePi+1:'')) +
     (nextPi !== null ? payCard(nextPi, 'Next — Payment '+(nextPi+1)) : '');
 
-  // Stat grid
   var activeSaved = activePi !== null ? schTotalSavedFor(activePi) : 0;
   var activeAmt   = activePi !== null ? SCH_PAYMENTS[activePi].amt : 0;
   var activeRem   = Math.max(0, activeAmt - activeSaved);
-  var nextSaved   = nextPi !== null ? schTotalSavedFor(nextPi) : 0;
-  var nextAmt     = nextPi !== null ? SCH_PAYMENTS[nextPi].amt : 0;
-  var nextRem     = Math.max(0, nextAmt - nextSaved);
 
   document.getElementById('schStatGrid').innerHTML = [
     { lbl:'Total Saved',   val:F(totalSaved)+' SR',   col:'#16a34a', sub:'across all payments' },
@@ -974,7 +966,6 @@ function renderSchool(sn) {
       + '<div class="sum-sub">'+s.sub+'</div></div>';
   }).join('');
 
-  // Progress: current payment bar
   var overallPct = totalNeeded > 0 ? Math.min(100, Math.round(totalSaved / totalNeeded * 100)) : 0;
   var activePct  = activeAmt > 0 ? Math.min(100, Math.round(activeSaved / activeAmt * 100)) : 0;
   document.getElementById('schProgressSection').innerHTML =
@@ -990,7 +981,6 @@ function renderSchool(sn) {
         + '<div class="pbar-sub" style="margin-bottom:12px;">'+F(activeSaved)+' / '+F(activeAmt)+' SR</div>'
       : '<div style="margin-bottom:12px;"></div>');
 
-  // Alert
   var sa = document.getElementById('schAlertBox');
   var thisSchSave = pi !== null ? getSchSaveP(pi, schMonthOffset(vm, vy, pi)) : 0;
   var minNeededSch = sn.schMinNeeded;
@@ -1009,7 +999,6 @@ function renderSchool(sn) {
     sa.innerHTML = '<span>!</span> No school saving this month. Min needed for '+pLabel+': <strong>'+F(minNeededSch)+' SR</strong>.';
   }
 
-  // This month card
   var w3 = pi !== null ? SCH_WINDOWS[pi] : null;
   var off3 = pi !== null ? schMonthOffset(vm, vy, pi) : 0;
   document.getElementById('schThisMonth').innerHTML =
@@ -1025,11 +1014,9 @@ function renderSchool(sn) {
         + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">From remaining after expenses (split by urgency)</div></div>'
       + '<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(thisSchSave)+' SR</span></div>';
 
-  // Full schedule for active payment (all its months)
   var sched = '';
   if (activePi !== null) {
     var wSch = SCH_WINDOWS[activePi];
-    var runRem = activeRem;
     var runSavedAcc = 0;
     for (var o = 0; o < wSch.n; o++) {
       var savedO = getSchSaveP(activePi, o);
@@ -1066,16 +1053,14 @@ function addExtraIncome() {
   if (!amt || amt <= 0) { err.textContent = 'Enter a valid amount'; err.style.display = 'block'; return; }
   err.style.display = 'none';
   data.extraIncome.unshift({ id: Date.now(), desc: desc, amt: amt, date: today() });
-  saveMonth();
+  saveAndRender();
   document.getElementById('exIncDesc').value = '';
   document.getElementById('exIncAmt').value  = '';
-  render();
 }
 function delExtraIncome(id) {
   data.extraIncome = data.extraIncome.filter(function(x){ return x.id !== id; });
-  saveMonth(); render();
+  saveAndRender();
 }
-
 
 function addOther() {
   var desc = document.getElementById('othDesc').value.trim();
@@ -1085,14 +1070,13 @@ function addOther() {
   if (!amt || amt <= 0) { err.textContent='Enter a valid amount'; err.style.display='block'; return; }
   err.style.display = 'none';
   data.other.unshift({ id:Date.now(), desc:desc, amt:amt, cat:document.getElementById('othCat').value, date:today() });
-  saveMonth();
+  saveAndRender();
   document.getElementById('othDesc').value = '';
   document.getElementById('othAmt').value  = '';
-  render();
 }
 function delOther(id) {
   data.other = data.other.filter(function(x){ return x.id !== id; });
-  saveMonth(); render();
+  saveAndRender();
 }
 
 document.addEventListener('keydown', function(e) {
@@ -1103,5 +1087,6 @@ document.addEventListener('keydown', function(e) {
 loadMonth();
 render();
 </script>
+
 </body>
 </html>
