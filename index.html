@@ -4,8 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Budget Pro"/>
 <title>Budget Pro</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjI2IiByeT0iMjYiIGZpbGw9IiMwYTE2MjgiLz48dGV4dCB4PSI1MCUiIHk9IjU3JSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sQmxpbmtNYWNTeXN0ZW1Gb250LHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNzIiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiNmMGI0MjkiPkI8L3RleHQ+PC9zdmc+"/>
+<meta name="theme-color" content="#0a1628"/>
 <style>
 *,::before,::after{box-sizing:border-box;margin:0;padding:0;}
 body{background:#f0f4f8;color:#1a2332;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;min-height:100vh;-webkit-text-size-adjust:100%;font-size:16px;}
@@ -272,15 +275,86 @@ var CAR_END_M   = 1;   // February index
 var CAR_END_Y   = 2030;
 var CAR_N       = 47;  // total months
 
-// School P1: save Mar–Jul 2026 (indices 0-4, 5 months) → pay Aug 2026
-// School P2: save Sep 2026–Jan 2027 (indices 5-9, 5 months) → pay Feb 2027
-var SCH_P1_AMT   = 2000;
-var SCH_P2_AMT   = 1500;
-var SCH_START_M  = 2;   // March index
-var SCH_START_Y  = 2026;
-var SCH_N        = 10;  // total saving months (5+5)
-var SCH_P1_MTHS  = 5;   // months 0-4 = P1 saving period
-var SCH_P2_MTHS  = 5;   // months 5-9 = P2 saving period
+// School Fees: full payment schedule
+// Aug starts at 2000, +500 each year. Feb starts at 1500, +500 each year.
+// Last payment: Feb 2035
+// Saving period: month after last payment → month before next deadline
+// Build the payment list dynamically
+var SCH_PAYMENTS = (function() {
+  var list = [];
+  var augAmt = 2000, febAmt = 1500;
+  // Pairs per school year: Aug then Feb
+  // Year 1: Aug 2026 (2000), Feb 2027 (1500)
+  // Year 2: Aug 2027 (2500), Feb 2028 (2000)
+  // ...until Feb 2035
+  var y = 2026;
+  while (true) {
+    // Aug payment
+    list.push({ m: 7, y: y, amt: augAmt });
+    augAmt += 500;
+    // Feb payment (next calendar year)
+    var fy = y + 1;
+    list.push({ m: 1, y: fy, amt: febAmt });
+    febAmt += 500;
+    if (fy >= 2035) break; // Feb 2035 is the last
+    y++;
+  }
+  return list;
+})();
+
+// For each payment, compute its saving window:
+// First payment (Aug 2026): save Mar 2026 – Jul 2026
+// Each subsequent: save from month after previous payment → month before deadline
+var SCH_WINDOWS = (function() {
+  var wins = [];
+  for (var i = 0; i < SCH_PAYMENTS.length; i++) {
+    var p = SCH_PAYMENTS[i];
+    var startM, startY;
+    if (i === 0) {
+      // First payment: start saving March 2026
+      startM = 2; startY = 2026;
+    } else {
+      // Start month after previous payment
+      var prev = SCH_PAYMENTS[i-1];
+      startM = prev.m + 1; startY = prev.y;
+      if (startM > 11) { startM = 0; startY++; }
+    }
+    // End: month before payment deadline
+    var endM = p.m - 1; var endY = p.y;
+    if (endM < 0) { endM = 11; endY--; }
+    // Count months in window
+    var nMonths = (endY - startY) * 12 + (endM - startM) + 1;
+    wins.push({ startM: startM, startY: startY, endM: endM, endY: endY, n: Math.max(1, nMonths) });
+  }
+  return wins;
+})();
+
+// Given a calendar month (m,y), return which payment index it belongs to (saving window), or null
+function schPaymentFor(m, y) {
+  for (var i = 0; i < SCH_PAYMENTS.length; i++) {
+    var w = SCH_WINDOWS[i];
+    var base = w.startY * 12 + w.startM;
+    var cur  = y * 12 + m;
+    var end  = w.endY * 12 + w.endM;
+    if (cur >= base && cur <= end) return i;
+  }
+  return null;
+}
+// Month index within a payment's saving window
+function schMonthOffset(m, y, pi) {
+  var w = SCH_WINDOWS[pi];
+  return (y - w.startY) * 12 + (m - w.startM);
+}
+// Storage key per payment per month-offset
+function schSaveKey(pi, offset) { return 'sch7_'+pi+'_'+offset; }
+function getSchSaveP(pi, offset) { return S.g(schSaveKey(pi, offset), 0); }
+function setSchSaveP(pi, offset, v) { S.s(schSaveKey(pi, offset), v); }
+// Total saved toward payment pi
+function schTotalSavedFor(pi) {
+  var t = 0, w = SCH_WINDOWS[pi];
+  for (var o = 0; o < w.n; o++) t += getSchSaveP(pi, o);
+  return t;
+}
 
 // ═══════════════════════════════════════════════════════════
 // STATE
@@ -330,23 +404,6 @@ function totalCarSaved() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// SCHOOL HELPERS
-// ═══════════════════════════════════════════════════════════
-// Returns 0-based index for school saving months (0=Mar2026 … 9=Jan2027), or null
-function schI(m, y) {
-  var i = (y - SCH_START_Y) * 12 + (m - SCH_START_M);
-  return (i >= 0 && i < SCH_N) ? i : null;
-}
-function schMonthOf(i) {
-  var t = SCH_START_M + i;
-  return { m: t % 12, y: SCH_START_Y + Math.floor(t / 12) };
-}
-function getSchSave(i)  { return S.g('sch6_'+i, 0); }
-function setSchSave(i,v){ S.s('sch6_'+i, v); }
-function schSavedP1()   { var t=0; for(var i=0;i<SCH_P1_MTHS;i++) t+=getSchSave(i); return t; }
-function schSavedP2()   { var t=0; for(var i=SCH_P1_MTHS;i<SCH_N;i++) t+=getSchSave(i); return t; }
-
-// ═══════════════════════════════════════════════════════════
 // CORE CALCULATION
 // ═══════════════════════════════════════════════════════════
 // For a given month (vm,vy):
@@ -376,55 +433,45 @@ function calcAll() {
   var carMinNeeded  = carMonthsLeft > 0 ? carStillNeeded / carMonthsLeft : 0;
 
   // ── SCHOOL urgency ──
-  var si = schI(vm, vy);
-  var isP1 = si !== null && si < SCH_P1_MTHS;
-  var isP2 = si !== null && si >= SCH_P1_MTHS;
-
-  var schSavedP1now = schSavedP1();
-  var schSavedP2now = schSavedP2();
-  if (si !== null && isP1) schSavedP1now -= getSchSave(si);
-  if (si !== null && isP2) schSavedP2now -= getSchSave(si);
-
-  var schStillNeeded = 0, schMonthsLeft = 0, schUrgency = 0, schMinNeeded = 0;
-  if (isP1) {
-    schStillNeeded = Math.max(0, SCH_P1_AMT - schSavedP1now);
-    schMonthsLeft  = Math.max(1, SCH_P1_MTHS - si);
-    schUrgency     = schStillNeeded / schMonthsLeft;
-    schMinNeeded   = schStillNeeded / schMonthsLeft;
-  } else if (isP2) {
-    schStillNeeded = Math.max(0, SCH_P2_AMT - schSavedP2now);
-    schMonthsLeft  = Math.max(1, SCH_N - si);
-    schUrgency     = schStillNeeded / schMonthsLeft;
+  var pi = schPaymentFor(vm, vy); // which payment period are we in?
+  var schSave = 0, schMinNeeded = 0, schMonthsLeft = 0, schStillNeeded = 0;
+  if (pi !== null) {
+    var w        = SCH_WINDOWS[pi];
+    var offset   = schMonthOffset(vm, vy, pi);
+    var savedSoFar = schTotalSavedFor(pi) - getSchSaveP(pi, offset); // exclude this month
+    schStillNeeded = Math.max(0, SCH_PAYMENTS[pi].amt - savedSoFar);
+    schMonthsLeft  = Math.max(1, w.n - offset);
     schMinNeeded   = schStillNeeded / schMonthsLeft;
   }
+  var schUrgency = schMonthsLeft > 0 ? schStillNeeded / schMonthsLeft : 0;
 
   // ── Split remaining by urgency ──
-  var carSave = 0, schSave = 0;
+  var carSave = 0;
+  schSave = 0;
   if (remaining > 0) {
     var totalUrgency = carUrgency + schUrgency;
     if (totalUrgency > 0) {
       var carW = ci !== null ? carUrgency / totalUrgency : 0;
-      var schW = si !== null ? schUrgency / totalUrgency : 0;
-      // If only one plan is active, it gets all
-      if (ci === null && si !== null)  { carW = 0; schW = 1; }
-      if (ci !== null && si === null)  { carW = 1; schW = 0; }
+      var schW = pi !== null ? schUrgency / totalUrgency : 0;
+      if (ci === null && pi !== null) { carW = 0; schW = 1; }
+      if (ci !== null && pi === null) { carW = 1; schW = 0; }
       carSave = remaining * carW;
       schSave = remaining * schW;
-    } else {
-      // No urgency data (outside all plan periods) — keep remaining for user info
-      carSave = 0; schSave = 0;
     }
   }
 
   // Store the auto-split values
   if (ci !== null) setCarSave(ci, Math.max(0, carSave));
-  if (si !== null) setSchSave(si, Math.max(0, schSave));
+  if (pi !== null) {
+    var off2 = schMonthOffset(vm, vy, pi);
+    setSchSaveP(pi, off2, Math.max(0, schSave));
+  }
 
   return {
     salary: salary, extraIncome: extraIncome, totalIncome: totalIncome,
     fixedExp: fixedExp, otherExp: otherExp,
     totalExp: totalExp, remaining: remaining,
-    ci: ci, si: si, isP1: isP1, isP2: isP2,
+    ci: ci, pi: pi,
     carSave: carSave, schSave: schSave,
     carMinNeeded: carMinNeeded, schMinNeeded: schMinNeeded,
     carMonthsLeft: carMonthsLeft, schMonthsLeft: schMonthsLeft,
@@ -489,10 +536,14 @@ function render() {
 
   // Month bar
   document.getElementById('monthTitle').textContent = MN[vm] + ' ' + vy;
-  var ci2 = carI(vm, vy), si2 = schI(vm, vy);
+  var ci2 = carI(vm, vy), pi2 = schPaymentFor(vm, vy);
   var metaParts = [];
   if (ci2 !== null) metaParts.push('Car month ' + (ci2+1) + '/47');
-  if (si2 !== null) metaParts.push(si2 < SCH_P1_MTHS ? 'School P1 month '+(si2+1)+'/5' : 'School P2 month '+(si2-SCH_P1_MTHS+1)+'/5');
+  if (pi2 !== null) {
+    var w2 = SCH_WINDOWS[pi2];
+    var off2b = schMonthOffset(vm, vy, pi2);
+    metaParts.push('School P'+(pi2+1)+' saving month '+(off2b+1)+'/'+w2.n);
+  }
   document.getElementById('monthMeta').textContent = metaParts.join(' · ');
 
   var badge = document.getElementById('monthBadge');
@@ -530,12 +581,22 @@ function render() {
 // ═══════════════════════════════════════════════════════════
 function renderOverview(sn) {
   var carSaved = totalCarSaved();
-  var p1Saved  = schSavedP1();
-  var p2Saved  = schSavedP2();
-  var carPct   = Math.min(100, Math.round(carSaved / CAR_TOTAL * 100));
-  var p1Pct    = Math.min(100, Math.round(p1Saved  / SCH_P1_AMT * 100));
-  var p2Pct    = Math.min(100, Math.round(p2Saved  / SCH_P2_AMT * 100));
+  var totalSchNeeded = SCH_PAYMENTS.reduce(function(s,p){ return s+p.amt; }, 0);
+  var totalSchSaved  = 0;
+  for (var i = 0; i < SCH_PAYMENTS.length; i++) totalSchSaved += schTotalSavedFor(i);
+  var schOverallPct  = totalSchNeeded > 0 ? Math.min(100, Math.round(totalSchSaved / totalSchNeeded * 100)) : 0;
+
+  // Active school payment
+  var activePiOv = null;
+  for (var i = 0; i < SCH_PAYMENTS.length; i++) {
+    if (schTotalSavedFor(i) < SCH_PAYMENTS[i].amt) { activePiOv = i; break; }
+  }
+  var activeSchSaved = activePiOv !== null ? schTotalSavedFor(activePiOv) : 0;
+  var activeSchAmt   = activePiOv !== null ? SCH_PAYMENTS[activePiOv].amt : 0;
+  var activeSchPct   = activeSchAmt > 0 ? Math.min(100, Math.round(activeSchSaved / activeSchAmt * 100)) : 100;
   var remCol   = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
+
+  var carPct = Math.min(100, Math.round(carSaved / CAR_TOTAL * 100));
 
   // Completed car months
   var carDone = 0;
@@ -558,28 +619,24 @@ function renderOverview(sn) {
 
   // Progress bars
   var pc = '';
-
-  // Car Plan
   pc += '<div class="pbar-wrap">'
     + '<div class="pbar-label"><span>🚗 Car Plan</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+carPct+'%</span></div>'
     + '<div class="pbar-track"><div class="pbar-fill" style="width:'+carPct+'%;background:#2563eb;"></div></div>'
-    + '<div class="pbar-sub">'+F(carSaved)+' / '+F(CAR_TOTAL)+' SR saved · <strong>'+carDone+' of 47 months</strong> done</div>'
+    + '<div class="pbar-sub">'+F(carSaved)+' / '+F(CAR_TOTAL)+' SR · <strong>'+carDone+' of 47 months</strong> done</div>'
     + '</div>';
-
-  // School P1
   pc += '<div class="pbar-wrap">'
-    + '<div class="pbar-label"><span>🏫 School — P1 (Aug 2026)</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+p1Pct+'%</span></div>'
-    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p1Pct+'%;background:#16a34a;"></div></div>'
-    + '<div class="pbar-sub">'+F(p1Saved)+' / 2,000 SR saved</div>'
+    + '<div class="pbar-label"><span>🏫 School — Overall</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+schOverallPct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+schOverallPct+'%;background:#16a34a;"></div></div>'
+    + '<div class="pbar-sub">'+F(totalSchSaved)+' / '+F(totalSchNeeded)+' SR total · Last payment Feb 2035</div>'
     + '</div>';
-
-  // School P2
-  pc += '<div class="pbar-wrap" style="margin-bottom:0;">'
-    + '<div class="pbar-label"><span>🏫 School — P2 (Feb 2027)</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#0d9488;">'+p2Pct+'%</span></div>'
-    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p2Pct+'%;background:#0d9488;"></div></div>'
-    + '<div class="pbar-sub">'+F(p2Saved)+' / 1,500 SR saved</div>'
-    + '</div>';
-
+  if (activePiOv !== null) {
+    var aP = SCH_PAYMENTS[activePiOv];
+    pc += '<div class="pbar-wrap" style="margin-bottom:0;">'
+      + '<div class="pbar-label"><span>🏫 Active: '+MN[aP.m]+' '+aP.y+' ('+F(aP.amt)+' SR)</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#0d9488;">'+activeSchPct+'%</span></div>'
+      + '<div class="pbar-track"><div class="pbar-fill" style="width:'+activeSchPct+'%;background:#0d9488;"></div></div>'
+      + '<div class="pbar-sub">'+F(activeSchSaved)+' / '+F(aP.amt)+' SR saved</div>'
+      + '</div>';
+  }
   document.getElementById('ovProgressCard').innerHTML = pc;
 
   // Breakdown rows
@@ -832,86 +889,135 @@ function renderCar(sn) {
 // SCHOOL FEES TAB
 // ═══════════════════════════════════════════════════════════
 function renderSchool(sn) {
-  var p1Saved = schSavedP1();
-  var p2Saved = schSavedP2();
-  var p1Rem   = Math.max(0, SCH_P1_AMT - p1Saved);
-  var p2Rem   = Math.max(0, SCH_P2_AMT - p2Saved);
-  var p1Pct   = Math.min(100, Math.round(p1Saved / SCH_P1_AMT * 100));
-  var p2Pct   = Math.min(100, Math.round(p2Saved / SCH_P2_AMT * 100));
-  var si      = sn.si;
-  var isP1    = sn.isP1, isP2 = sn.isP2;
+  var pi = sn.pi; // current active payment index (null if not in saving window)
 
-  // Months left for current phase
-  var ml1 = si !== null && isP1 ? Math.max(0, SCH_P1_MTHS - si) : (si === null && p1Rem > 0 ? 0 : 0);
-  var ml2 = si !== null && isP2 ? Math.max(0, SCH_N - si) : 0;
-  var min1 = ml1 > 0 ? p1Rem / ml1 : 0;
-  var min2 = ml2 > 0 ? p2Rem / ml2 : 0;
-  var thisSchSave = si !== null ? getSchSave(si) : 0;
+  // Find current and next payment
+  var activePi  = pi !== null ? pi : findCurrentOrNextPayment();
+  var nextPi    = activePi !== null && activePi + 1 < SCH_PAYMENTS.length ? activePi + 1 : null;
 
-  document.getElementById('schHeroAmount').textContent = F(p1Rem + p2Rem) + ' SR';
-  document.getElementById('schHeroSub').textContent    = 'P1: ' + F(p1Rem) + ' SR left · P2: ' + F(p2Rem) + ' SR left';
+  function findCurrentOrNextPayment() {
+    // Find the next upcoming payment that isn't fully saved yet
+    for (var i = 0; i < SCH_PAYMENTS.length; i++) {
+      var saved = schTotalSavedFor(i);
+      if (saved < SCH_PAYMENTS[i].amt) return i;
+    }
+    return SCH_PAYMENTS.length > 0 ? SCH_PAYMENTS.length - 1 : null;
+  }
 
-  // Payment info
-  document.getElementById('schPayInfo').innerHTML =
-    payInfoRow('Payment 1', 'Due August 2026 · save Mar–Jul 2026 (5 months)', SCH_P1_AMT, p1Saved, p1Rem, '#16a34a') +
-    payInfoRow('Payment 2', 'Due February 2027 · save Sep 2026–Jan 2027 (5 months)', SCH_P2_AMT, p2Saved, p2Rem, '#0d9488');
+  // Total across all payments
+  var totalNeeded = SCH_PAYMENTS.reduce(function(s,p){ return s+p.amt; }, 0);
+  var totalSaved  = 0;
+  for (var i = 0; i < SCH_PAYMENTS.length; i++) totalSaved += schTotalSavedFor(i);
+  var totalLeft   = totalNeeded - totalSaved;
 
-  function payInfoRow(title, sub, total, saved, rem, col) {
-    return '<div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:11px;padding:13px 15px;margin-bottom:8px;">'
-      + '<div><div style="font-size:15px;font-weight:800;color:#1a2332;">'+title+'</div>'
-        + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+sub+'</div></div>'
-      + '<div style="text-align:right;">'
-        + '<div style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(total)+' SR</div>'
-        + '<div style="font-size:11px;font-weight:700;color:'+col+';">Saved: '+F(saved)+' SR · Left: '+F(rem)+' SR</div>'
+  // Hero
+  document.getElementById('schHeroAmount').textContent = F(totalLeft) + ' SR';
+  var lastP = SCH_PAYMENTS[SCH_PAYMENTS.length-1];
+  document.getElementById('schHeroSub').textContent =
+    totalSaved > 0 ? F(totalSaved)+' SR saved of '+F(totalNeeded)+' SR total · Last payment Feb 2035'
+    : 'Total across all payments · Last payment Feb 2035';
+
+  // Payment info — current + next only
+  function payCard(pIdx, label) {
+    if (pIdx === null || pIdx >= SCH_PAYMENTS.length) return '';
+    var p    = SCH_PAYMENTS[pIdx];
+    var w    = SCH_WINDOWS[pIdx];
+    var sved = schTotalSavedFor(pIdx);
+    var rem  = Math.max(0, p.amt - sved);
+    var pct  = Math.min(100, Math.round(sved / p.amt * 100));
+    var col  = pIdx % 2 === 0 ? '#16a34a' : '#0d9488';
+    var isActive = (pIdx === pi);
+    var offset   = isActive ? schMonthOffset(vm, vy, pIdx) : 0;
+    var mLeft    = isActive ? Math.max(1, w.n - offset) : w.n;
+    var minMo    = mLeft > 0 ? rem / mLeft : 0;
+    return '<div style="background:#fff;border:2px solid '+(isActive?col:'#e2e8f0')+';border-radius:14px;padding:15px 17px;margin-bottom:10px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+        + '<div>'
+          + '<div style="font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:'+(isActive?col:'#94a3b8')+';">'+label+(isActive?' · ACTIVE':'')+'</div>'
+          + '<div style="font-size:18px;font-weight:900;color:#1a2332;margin-top:2px;">'
+            + MN[p.m]+' '+p.y+' — '+F(p.amt)+' SR</div>'
+          + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:3px;">'
+            + 'Save: '+MN[w.startM]+' '+w.startY+' → '+MN[w.endM]+' '+w.endY+' ('+w.n+' months)</div>'
+        + '</div>'
+        + '<div style="text-align:right;">'
+          + '<div style="font-size:22px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(sved)+' SR</div>'
+          + '<div style="font-size:11px;font-weight:700;color:'+(rem===0?'#16a34a':'#94a3b8')+';">'+F(rem)+' SR left</div>'
+        + '</div></div>'
+      + '<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+col+';"></div></div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#94a3b8;margin-top:4px;">'
+        + '<span>'+pct+'% saved</span>'
+        + (isActive && rem > 0 ? '<span>Min this month: <strong style="color:'+col+'">'+F(minMo)+' SR</strong></span>' : '')
+        + (rem === 0 ? '<span style="color:#16a34a;">✓ Fully saved!</span>' : '')
       + '</div></div>';
   }
 
+  document.getElementById('schPayInfo').innerHTML =
+    payCard(activePi, 'Payment '+(activePi!==null?activePi+1:'')) +
+    (nextPi !== null ? payCard(nextPi, 'Next — Payment '+(nextPi+1)) : '');
+
   // Stat grid
+  var activeSaved = activePi !== null ? schTotalSavedFor(activePi) : 0;
+  var activeAmt   = activePi !== null ? SCH_PAYMENTS[activePi].amt : 0;
+  var activeRem   = Math.max(0, activeAmt - activeSaved);
+  var nextSaved   = nextPi !== null ? schTotalSavedFor(nextPi) : 0;
+  var nextAmt     = nextPi !== null ? SCH_PAYMENTS[nextPi].amt : 0;
+  var nextRem     = Math.max(0, nextAmt - nextSaved);
+
   document.getElementById('schStatGrid').innerHTML = [
-    { lbl:'P1 Saved',     val:F(p1Saved)+' SR',   col:'#16a34a', sub:'of 2,000 SR' },
-    { lbl:'P1 Remaining', val:F(p1Rem)+' SR',      col:p1Rem===0?'#16a34a':'#d97706', sub:'due Aug 2026' },
-    { lbl:'P2 Saved',     val:F(p2Saved)+' SR',    col:'#0d9488', sub:'of 1,500 SR' },
-    { lbl:'P2 Remaining', val:F(p2Rem)+' SR',      col:p2Rem===0?'#16a34a':'#0d9488', sub:'due Feb 2027' },
+    { lbl:'Total Saved',   val:F(totalSaved)+' SR',   col:'#16a34a', sub:'across all payments' },
+    { lbl:'Total Left',    val:F(totalLeft)+' SR',    col:'#d97706', sub:'to pay by Feb 2035' },
+    { lbl:'Active Saved',  val:F(activeSaved)+' SR',  col:'#16a34a', sub:activePi!==null?MN[SCH_PAYMENTS[activePi].m]+' '+SCH_PAYMENTS[activePi].y:'—' },
+    { lbl:'Active Left',   val:F(activeRem)+' SR',    col:activeRem===0?'#16a34a':'#d97706', sub:'this payment' },
   ].map(function(s) {
     return '<div class="plan-stat"><div class="sum-label">'+s.lbl+'</div>'
       + '<div class="sum-val" style="color:'+s.col+';font-size:17px;">'+s.val+'</div>'
       + '<div class="sum-sub">'+s.sub+'</div></div>';
   }).join('');
 
-  // Progress bars
+  // Progress: current payment bar
+  var overallPct = totalNeeded > 0 ? Math.min(100, Math.round(totalSaved / totalNeeded * 100)) : 0;
+  var activePct  = activeAmt > 0 ? Math.min(100, Math.round(activeSaved / activeAmt * 100)) : 0;
   document.getElementById('schProgressSection').innerHTML =
-    '<div class="pbar-label"><span>🏫 P1 — Aug 2026</span>'
-      + '<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+p1Pct+'%</span></div>'
-    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p1Pct+'%;background:#16a34a;"></div></div>'
-    + '<div class="pbar-sub">'+F(p1Saved)+' / 2,000 SR saved</div>'
-    + '<div class="pbar-label" style="margin-top:6px;"><span>🏫 P2 — Feb 2027</span>'
-      + '<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#0d9488;">'+p2Pct+'%</span></div>'
-    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p2Pct+'%;background:#0d9488;"></div></div>'
-    + '<div class="pbar-sub" style="margin-bottom:12px;">'+F(p2Saved)+' / 1,500 SR saved</div>';
+    '<div class="pbar-label"><span>🏫 Overall School Progress</span>'
+      + '<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+overallPct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+overallPct+'%;background:#16a34a;"></div></div>'
+    + '<div class="pbar-sub">'+F(totalSaved)+' / '+F(totalNeeded)+' SR total</div>'
+    + (activePi !== null ?
+        '<div class="pbar-label" style="margin-top:6px;"><span>Active: '
+          + MN[SCH_PAYMENTS[activePi].m]+' '+SCH_PAYMENTS[activePi].y+' ('+F(activeAmt)+' SR)</span>'
+          + '<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#0d9488;">'+activePct+'%</span></div>'
+        + '<div class="pbar-track"><div class="pbar-fill" style="width:'+activePct+'%;background:#0d9488;"></div></div>'
+        + '<div class="pbar-sub" style="margin-bottom:12px;">'+F(activeSaved)+' / '+F(activeAmt)+' SR</div>'
+      : '<div style="margin-bottom:12px;"></div>');
 
   // Alert
   var sa = document.getElementById('schAlertBox');
-  var activePhase = isP1 ? 'P1 (Aug 2026)' : isP2 ? 'P2 (Feb 2027)' : null;
-  var minNeededSch = isP1 ? min1 : isP2 ? min2 : 0;
-  if (si === null) {
+  var thisSchSave = pi !== null ? getSchSaveP(pi, schMonthOffset(vm, vy, pi)) : 0;
+  var minNeededSch = sn.schMinNeeded;
+  var pLabel = activePi !== null ? MN[SCH_PAYMENTS[activePi].m]+' '+SCH_PAYMENTS[activePi].y+' ('+F(activeAmt)+' SR)' : '';
+  if (pi === null) {
     sa.style.cssText = 'background:#f1f5f9;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:0;display:flex;gap:8px;';
-    sa.innerHTML = '<span>ℹ</span> School saving is active Mar–Jul 2026 (P1) and Sep 2026–Jan 2027 (P2).';
+    sa.innerHTML = '<span>ℹ</span> Not in an active school saving window. Navigate to a saving period.';
   } else if (thisSchSave >= minNeededSch && minNeededSch > 0) {
     sa.style.cssText = 'background:#f0fdf4;border:2px solid #bbf7d0;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#16a34a;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    sa.innerHTML = '<span>✓</span> Saving <strong>'+F(thisSchSave)+' SR</strong> for '+activePhase+' — <strong>'+F(thisSchSave-minNeededSch)+' SR</strong> above minimum.';
+    sa.innerHTML = '<span>✓</span> Saving <strong>'+F(thisSchSave)+' SR</strong> for '+pLabel+' — <strong>'+F(thisSchSave-minNeededSch)+' SR</strong> above minimum.';
   } else if (thisSchSave > 0) {
     sa.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#d97706;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    sa.innerHTML = '<span>!</span> Saving <strong>'+F(thisSchSave)+' SR</strong> for '+activePhase+' — below minimum of <strong>'+F(minNeededSch)+' SR</strong>. Shortfall spreads to next months.';
+    sa.innerHTML = '<span>!</span> Saving <strong>'+F(thisSchSave)+' SR</strong> for '+pLabel+' — below minimum of <strong>'+F(minNeededSch)+' SR</strong>. Shortfall spreads to next months.';
   } else {
     sa.style.cssText = 'background:#fef2f2;border:2px solid #fecaca;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#dc2626;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    sa.innerHTML = '<span>!</span> No school saving this month'+(activePhase?' for '+activePhase:'')+'. Min needed: <strong>'+F(minNeededSch)+' SR</strong>.';
+    sa.innerHTML = '<span>!</span> No school saving this month. Min needed for '+pLabel+': <strong>'+F(minNeededSch)+' SR</strong>.';
   }
 
-  // This month
+  // This month card
+  var w3 = pi !== null ? SCH_WINDOWS[pi] : null;
+  var off3 = pi !== null ? schMonthOffset(vm, vy, pi) : 0;
   document.getElementById('schThisMonth').innerHTML =
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
       + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed this month</div>'
-        + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+(isP1?'For P1: '+F(p1Rem)+' SR left over '+ml1+' months':isP2?'For P2: '+F(p2Rem)+' SR left over '+ml2+' months':'Not in active saving period')+'</div></div>'
+        + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'
+          + (pi !== null ? F(activeRem)+' SR left · '+sn.schMonthsLeft+' months in window' : 'Not in active saving window')
+        + '</div></div>'
       + '<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#d97706;">'+F(minNeededSch)+' SR</span></div>'
     + '<div style="height:2px;background:#f1f5f9;margin:10px 0;"></div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center;">'
@@ -919,39 +1025,34 @@ function renderSchool(sn) {
         + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">From remaining after expenses (split by urgency)</div></div>'
       + '<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(thisSchSave)+' SR</span></div>';
 
-  // Full 10-month schedule
+  // Full schedule for active payment (all its months)
   var sched = '';
-  var runP1 = p1Rem, rmP1 = SCH_P1_MTHS;
-  var runP2 = p2Rem, rmP2 = SCH_P2_MTHS;
-  // Recalculate from month 0
-  var rP1f = p1Saved, rP2f = p2Saved;
-  for (var j = 0; j < SCH_N; j++) {
-    var mo2    = schMonthOf(j);
-    var savedJ = getSchSave(j);
-    var phase  = j < SCH_P1_MTHS ? 1 : 2;
-    var phCol  = phase === 1 ? '#16a34a' : '#0d9488';
-    var phBg   = phase === 1 ? '#dcfce7' : '#ccfbf1';
-    // Minimum for this slot (recalculated based on what was saved so far)
-    var rem4   = phase === 1 ? Math.max(0, SCH_P1_AMT - rP1f) : Math.max(0, SCH_P2_AMT - rP2f);
-    var mLeft4 = phase === 1 ? Math.max(1, SCH_P1_MTHS - j) : Math.max(1, SCH_N - j);
-    var req4   = rem4 / mLeft4;
-    var isNow2 = (j === si);
-    var sc3    = savedJ > 0 && savedJ >= req4 ? '#16a34a' : savedJ > 0 ? '#d97706' : '#94a3b8';
-
-    sched += '<div class="month-sched-row" style="'+(isNow2?'background:#f0fdf4;border-radius:10px;padding:11px;margin:-2px 0;':'')+'">'
-      + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+MN[mo2.m]+' '+mo2.y
-        + ' <span style="font-size:10px;background:'+phBg+';color:'+phCol+';padding:2px 6px;border-radius:5px;font-weight:800;">P'+phase+'</span>'
-        + (isNow2 ? ' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 6px;border-radius:5px;font-weight:800;">NOW</span>' : '')+'</div>'
-        + '<div style="font-size:11px;font-weight:600;color:#94a3b8;">Month '+(j<SCH_P1_MTHS?j+1:j-SCH_P1_MTHS+1)+(phase===1?'/5 P1':'/5 P2')+' · min: '+F(req4)+' SR</div></div>'
-      + '<div style="text-align:right;">'
-        + '<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(savedJ>0?sc3:'#cbd5e1')+';">'+(savedJ>0?F(savedJ)+' SR':'—')+'</div>'
-        + '<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+(savedJ>0?(savedJ>=req4?'✓ on track':'below min'):'not saved yet')+'</div>'
-      + '</div></div>';
-
-    if (phase === 1) rP1f += savedJ;
-    else             rP2f += savedJ;
+  if (activePi !== null) {
+    var wSch = SCH_WINDOWS[activePi];
+    var runRem = activeRem;
+    var runSavedAcc = 0;
+    for (var o = 0; o < wSch.n; o++) {
+      var savedO = getSchSaveP(activePi, o);
+      var remNow = Math.max(0, activeAmt - runSavedAcc);
+      var mLeftO = Math.max(1, wSch.n - o);
+      var reqO   = remNow / mLeftO;
+      var calMo  = wSch.startM + o;
+      var calYr  = wSch.startY + Math.floor(calMo / 12);
+      calMo      = calMo % 12;
+      var isNow  = (calMo === vm && calYr === vy);
+      var sc4    = savedO > 0 && savedO >= reqO ? '#16a34a' : savedO > 0 ? '#d97706' : '#94a3b8';
+      sched += '<div class="month-sched-row" style="'+(isNow?'background:#f0fdf4;border-radius:10px;padding:11px;margin:-2px 0;':'')+'">'
+        + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+MN[calMo]+' '+calYr
+          + (isNow ? ' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 6px;border-radius:5px;font-weight:800;">NOW</span>' : '')+'</div>'
+          + '<div style="font-size:11px;font-weight:600;color:#94a3b8;">Month '+(o+1)+'/'+wSch.n+' · min: '+F(reqO)+' SR</div></div>'
+        + '<div style="text-align:right;">'
+          + '<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(savedO>0?sc4:'#cbd5e1')+';">'+(savedO>0?F(savedO)+' SR':'—')+'</div>'
+          + '<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+(savedO>0?(savedO>=reqO?'✓ on track':'below min'):'not saved yet')+'</div>'
+        + '</div></div>';
+      runSavedAcc += savedO;
+    }
   }
-  document.getElementById('schSchedule').innerHTML = sched;
+  document.getElementById('schSchedule').innerHTML = sched || '<div class="empty">No active payment schedule</div>';
 }
 
 // ═══════════════════════════════════════════════════════════
