@@ -1,607 +1,943 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Budget Pro"/>
 <title>Budget Pro</title>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+*,::before,::after{box-sizing:border-box;margin:0;padding:0;}
 body{background:#f0f4f8;color:#1a2332;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;min-height:100vh;-webkit-text-size-adjust:100%;font-size:16px;}
 input,select,button{font-family:inherit;-webkit-appearance:none;appearance:none;font-size:16px;}
 button{cursor:pointer;}
-
 .nav{background:#fff;border-bottom:2px solid #e2e8f0;padding:0 14px;position:-webkit-sticky;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
 .nav-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;}
 .logo{font-weight:900;font-size:18px;color:#1a2332;display:flex;align-items:center;gap:8px;}
 .logo-dot{width:11px;height:11px;border-radius:50%;background:#3b82f6;}
 .logo small{color:#94a3b8;font-weight:500;font-size:13px;}
-
-.tabs{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 14px;background:#fff;border-bottom:2px solid #e2e8f0;max-width:600px;margin:0 auto;}
+.tabs-wrap{background:#fff;border-bottom:2px solid #e2e8f0;}
+.tabs{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 14px;max-width:600px;margin:0 auto;}
 .tab-btn{background:#f1f5f9;border:2px solid transparent;color:#475569;padding:9px 18px;border-radius:12px;font-size:15px;font-weight:700;white-space:nowrap;flex-shrink:0;}
 .tab-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff;}
-
 .main{max-width:600px;margin:0 auto;padding:18px 14px 60px;}
-
 .month-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
 .nav-btn{background:#f1f5f9;border:2px solid #e2e8f0;color:#475569;width:44px;height:44px;border-radius:12px;font-size:24px;line-height:1;padding:0;font-weight:700;}
-.month-title{font-weight:900;font-size:26px;color:#1a2332;text-align:center;}
-.month-title span{color:#94a3b8;font-weight:600;}
-
+.month-title{font-weight:900;font-size:24px;color:#1a2332;text-align:center;}
 .card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:14px;}
-.card-title{font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:14px;}
-
-.alert{border-radius:16px;padding:16px 18px;margin-bottom:16px;font-size:15px;font-weight:700;display:flex;align-items:flex-start;gap:12px;line-height:1.5;}
-
+.card-title{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:14px;}
 .sum-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
 .sum-box{flex:1 1 140px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.06);border-top:4px solid #3b82f6;}
-.sum-label{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;}
-.sum-val{font-size:26px;font-weight:900;line-height:1;font-family:‘Courier New’,monospace;}
-.sum-sub{font-size:12px;font-weight:600;color:#94a3b8;margin-top:6px;}
-
-.prog-label{font-size:14px;font-weight:800;color:#475569;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
-.prog-pct{font-size:16px;font-weight:900;font-family:‘Courier New’,monospace;}
-.pbar-track{background:#f1f5f9;border-radius:99px;height:12px;overflow:hidden;margin-bottom:5px;}
+.sum-label{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;}
+.sum-val{font-size:21px;font-weight:900;line-height:1;font-family:'Courier New',monospace;}
+.sum-sub{font-size:11px;font-weight:600;color:#94a3b8;margin-top:6px;}
+.pbar-wrap{margin-bottom:16px;}
+.pbar-label{font-size:14px;font-weight:800;color:#475569;margin-bottom:5px;display:flex;justify-content:space-between;}
+.pbar-track{background:#f1f5f9;border-radius:99px;height:13px;overflow:hidden;margin-bottom:4px;}
 .pbar-fill{height:100%;border-radius:99px;transition:width .6s ease;}
-.prog-sub{font-size:12px;font-weight:700;color:#94a3b8;font-family:‘Courier New’,monospace;margin-bottom:18px;}
-
-/* BILLS */
-.bill-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:2px solid #f1f5f9;}
-.bill-row:last-child{border-bottom:none;}
-.bill-name{font-size:17px;font-weight:700;color:#1a2332;}
-.bill-input{background:#f8fafc;border:2px solid #e2e8f0;color:#1a2332;padding:10px 12px;border-radius:12px;font-size:17px;font-weight:800;font-family:‘Courier New’,monospace;width:120px;text-align:right;}
-.bill-input:focus{border-color:#3b82f6;outline:none;}
-.bill-sr{font-size:14px;font-weight:700;color:#94a3b8;margin-left:4px;}
-
-/* EXPENSES */
-.setting-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:2px solid #f1f5f9;}
-.setting-row:last-child{border-bottom:none;}
-.setting-label{font-size:17px;font-weight:700;color:#1a2332;}
-.setting-sub{font-size:12px;color:#94a3b8;font-weight:600;margin-top:2px;}
-.setting-input{background:#f8fafc;border:2px solid #e2e8f0;color:#1a2332;padding:10px 12px;border-radius:12px;font-size:17px;font-weight:800;font-family:‘Courier New’,monospace;width:120px;text-align:right;}
-.setting-input:focus{border-color:#3b82f6;outline:none;}
-
-/* ADD FORM */
-.add-form{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
-.add-row{display:flex;gap:8px;flex-wrap:wrap;}
-.add-input{background:#f8fafc;border:2px solid #e2e8f0;color:#1a2332;padding:12px 14px;border-radius:12px;font-size:16px;font-weight:600;flex:1 1 120px;}
+.pbar-sub{font-size:12px;font-weight:700;color:#94a3b8;font-family:'Courier New',monospace;}
+.exp-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:2px solid #f1f5f9;}
+.exp-row:last-child{border-bottom:none;}
+.exp-name{font-size:16px;font-weight:700;color:#1a2332;}
+.exp-sub{font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;}
+.exp-input{background:#f8fafc;border:2px solid #e2e8f0;color:#1a2332;padding:9px 11px;border-radius:12px;font-size:16px;font-weight:800;font-family:'Courier New',monospace;width:115px;text-align:right;}
+.exp-input:focus{border-color:#3b82f6;outline:none;}
+.exp-sr{font-size:13px;font-weight:700;color:#94a3b8;margin-left:4px;}
+.add-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.add-input{background:#f8fafc;border:2px solid #e2e8f0;color:#1a2332;padding:11px 13px;border-radius:12px;font-size:15px;font-weight:600;flex:1 1 110px;}
 .add-input:focus{border-color:#3b82f6;outline:none;}
-.add-btn{background:#3b82f6;color:#fff;font-weight:800;border:none;border-radius:12px;padding:12px 20px;font-size:16px;white-space:nowrap;box-shadow:0 2px 8px rgba(59,130,246,0.3);}
-.add-btn.green{background:#16a34a;box-shadow:0 2px 8px rgba(22,163,74,0.3);}
-
-.item-list{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.item-row{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:12px 14px;}
-.item-desc{font-size:15px;font-weight:700;color:#1a2332;}
-.item-meta{font-size:12px;font-weight:600;color:#94a3b8;margin-top:3px;}
-.item-amt{font-size:17px;font-weight:900;font-family:‘Courier New’,monospace;}
-.del-btn{background:#fee2e2;border:none;color:#dc2626;font-size:18px;font-weight:900;padding:6px 12px;border-radius:10px;margin-left:8px;}
-.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-block;}
-.empty{text-align:center;color:#94a3b8;font-size:15px;font-weight:600;padding:30px 0;}
+.add-btn{background:#3b82f6;color:#fff;font-weight:800;border:none;border-radius:12px;padding:11px 18px;font-size:15px;white-space:nowrap;}
+.item-list{display:flex;flex-direction:column;gap:7px;max-height:380px;overflow-y:auto;}
+.item-row{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:2px solid #e2e8f0;border-radius:13px;padding:11px 13px;}
+.del-btn{background:#fee2e2;border:none;color:#dc2626;font-size:17px;font-weight:900;padding:5px 11px;border-radius:9px;margin-left:8px;flex-shrink:0;}
+.empty{text-align:center;color:#94a3b8;font-size:14px;font-weight:600;padding:24px 0;}
 select.add-input{background:#f8fafc;}
+.plan-hero{border-radius:20px;padding:22px;margin-bottom:14px;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.18);}
+.hero-title{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;opacity:.7;margin-bottom:6px;}
+.hero-amount{font-size:40px;font-weight:900;font-family:'Courier New',monospace;line-height:1;}
+.hero-sub{font-size:13px;font-weight:600;opacity:.8;margin-top:5px;}
+.car-hero-bg{background:linear-gradient(135deg,#1e3a5f,#2563eb);}
+.sch-hero-bg{background:linear-gradient(135deg,#1e4a3a,#16a34a);}
+.plan-stat{flex:1 1 120px;background:#fff;border-radius:15px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+.month-sched-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:2px solid #f1f5f9;}
+.month-sched-row:last-child{border-bottom:none;}
+.info-box{border-radius:13px;padding:13px 15px;font-size:14px;font-weight:700;line-height:1.6;margin-bottom:12px;}
+.salary-input-big{background:#f8fafc;border:2px solid #e2e8f0;color:#1a2332;padding:11px 13px;border-radius:13px;font-size:22px;font-weight:900;font-family:'Courier New',monospace;width:150px;text-align:right;}
+.salary-input-big:focus{border-color:#3b82f6;outline:none;}
 </style>
-
 </head>
 <body>
 
 <nav class="nav">
   <div class="nav-inner">
-    <div class="logo"><div class="logo-dot"></div>راتبي <small>/ Budget Pro</small></div>
-    <div id="monthBadge" style="font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;background:#dbeafe;color:#1d4ed8;font-family:'Courier New',monospace;"></div>
+    <div class="logo"><div class="logo-dot"></div>My Salary <small>/ Budget Pro</small></div>
+    <div id="monthBadge" style="font-size:11px;font-weight:800;padding:5px 11px;border-radius:20px;background:#dbeafe;color:#1d4ed8;font-family:'Courier New',monospace;"></div>
   </div>
 </nav>
 
-<div style="background:#fff;border-bottom:2px solid #e2e8f0;">
+<div class="tabs-wrap">
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
     <button class="tab-btn" onclick="switchTab('income')">Income</button>
     <button class="tab-btn" onclick="switchTab('expenses')">Expenses</button>
-    <button class="tab-btn" onclick="switchTab('extra')">Extra Spending</button>
-    <button class="tab-btn" onclick="switchTab('future')">Future</button>
+    <button class="tab-btn" onclick="switchTab('car')">🚗 Car Plan</button>
+    <button class="tab-btn" onclick="switchTab('school')">🏫 School Fees</button>
   </div>
 </div>
 
 <div class="main">
-
   <div class="month-bar">
     <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
     <div style="text-align:center">
       <div class="month-title" id="monthTitle"></div>
+      <div id="monthMeta" style="font-size:12px;font-weight:700;color:#94a3b8;margin-top:2px;"></div>
     </div>
     <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
   </div>
 
-  <div class="alert" id="alertBox"></div>
+  <div id="alertBox" style="display:none;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;line-height:1.6;"></div>
 
-  <!-- OVERVIEW -->
-
+  <!-- ══ OVERVIEW ══ -->
   <div id="tab-overview">
-    <div class="sum-grid" id="sumGrid"></div>
-    <div class="card" id="progCard"></div>
+    <div class="sum-grid" id="ovSumGrid"></div>
+    <div class="card" id="ovProgressCard"></div>
     <div class="card">
-      <div class="card-title">Full Breakdown</div>
-      <div id="breakdownList"></div>
+      <div class="card-title">This Month Breakdown</div>
+      <div id="ovBreakdown"></div>
     </div>
   </div>
 
-  <!-- INCOME -->
-
+  <!-- ══ INCOME ══ -->
   <div id="tab-income" style="display:none">
     <div class="card">
-      <div class="card-title">Salary & Goal</div>
-      <div class="setting-row">
-        <div><div class="setting-label">My Salary</div><div class="setting-sub">Main monthly income</div></div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <input class="setting-input" type="number" id="salaryInput" placeholder="0" oninput="updateSetting('salary',this.value)"/>
-          <span style="font-size:14px;font-weight:700;color:#94a3b8">SR</span>
+      <div class="card-title">Monthly Salary</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+        <div>
+          <div style="font-size:17px;font-weight:700;color:#1a2332;">My Salary</div>
+          <div style="font-size:12px;color:#94a3b8;font-weight:600;margin-top:2px;">Enter your monthly income</div>
         </div>
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">Saving Goal</div><div class="setting-sub">Target savings per month</div></div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <input class="setting-input" type="number" id="goalInput" placeholder="0" oninput="updateSetting('goal',this.value)"/>
-          <span style="font-size:14px;font-weight:700;color:#94a3b8">SR</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input class="salary-input-big" type="number" id="salaryInput" placeholder="0" oninput="setSalary(this.value)"/>
+          <span style="font-size:14px;font-weight:700;color:#94a3b8;">SR</span>
         </div>
       </div>
     </div>
 
-```
-<div class="card">
-  <div class="card-title">Extra Income (Freelance / Side Work)</div>
-  <div class="add-form">
-    <input class="add-input" id="incDesc" placeholder="Description (e.g. Freelance project)..."/>
-    <div class="add-row">
-      <select class="add-input" id="incCat" style="flex:1 1 130px">
-        <option>Freelance</option>
-        <option>Side Work</option>
-        <option>Bonus</option>
-        <option>Gift</option>
-        <option>Other</option>
-      </select>
-      <input class="add-input" type="number" id="incAmt" placeholder="Amount SR" style="flex:1 1 120px;font-family:'Courier New',monospace;font-weight:800"/>
-      <button class="add-btn green" onclick="addIncome()">+ Add</button>
+    <div class="card" style="border:2px solid #e9d5ff;background:#fdf4ff;">
+      <div class="card-title" style="color:#7c3aed;">📊 Your Money — This Month</div>
+      <div id="incomePanel"><div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div></div>
     </div>
   </div>
-  <div id="incErr" style="color:#dc2626;font-size:13px;font-weight:700;margin-bottom:10px;display:none"></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <span style="font-size:14px;font-weight:800;color:#475569">Total Extra This Month</span>
-    <span id="incTotal" style="font-size:20px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;"></span>
-  </div>
-  <div id="incList"></div>
-</div>
-```
 
-  </div>
-
-  <!-- EXPENSES (fixed list) -->
-
+  <!-- ══ EXPENSES ══ -->
   <div id="tab-expenses" style="display:none">
+
+    <div id="expStatusCard" class="card" style="border:2px solid #e2e8f0;"></div>
+
     <div class="card">
-      <div class="card-title">Monthly Bills — Enter Amounts</div>
-      <div class="bill-row">
-        <div><div class="bill-name">Family Support</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_family" placeholder="0" oninput="updateBill('family',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
-      </div>
-      <div class="bill-row">
-        <div><div class="bill-name">Car Lease</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_car" placeholder="0" oninput="updateBill('car',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
-      </div>
-      <div class="bill-row">
-        <div><div class="bill-name">Mobile Bill</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_mobile" placeholder="0" oninput="updateBill('mobile',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
-      </div>
-      <div class="bill-row">
-        <div><div class="bill-name">Home Rent</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_rent" placeholder="0" oninput="updateBill('rent',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
-      </div>
-      <div class="bill-row">
-        <div><div class="bill-name">Home Internet</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_internet" placeholder="0" oninput="updateBill('internet',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
-      </div>
-      <div class="bill-row">
-        <div><div class="bill-name">Tabby</div><div class="setting-sub">Installment</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_tabby" placeholder="0" oninput="updateBill('tabby',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
-      </div>
-      <div class="bill-row">
-        <div><div class="bill-name">Tamara</div><div class="setting-sub">Installment</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_tamara" placeholder="0" oninput="updateBill('tamara',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
-      </div>
-      <div class="bill-row">
-        <div><div class="bill-name">Credit Card</div></div>
-        <div style="display:flex;align-items:center">
-          <input class="bill-input" type="number" id="b_credit" placeholder="0" oninput="updateBill('credit',this.value)"/>
-          <span class="bill-sr">SR</span>
-        </div>
+      <div class="card-title">Fixed Monthly Expenses</div>
+      <div class="exp-row"><div><div class="exp-name">Family Support</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_family" placeholder="0" oninput="setBill('family',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Car Lease</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_car" placeholder="0" oninput="setBill('car',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Mobile Bill</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_mobile" placeholder="0" oninput="setBill('mobile',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Home Rent</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_rent" placeholder="0" oninput="setBill('rent',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Home Internet</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_internet" placeholder="0" oninput="setBill('internet',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Tabby</div><div class="exp-sub">Installment</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tabby" placeholder="0" oninput="setBill('tabby',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Tamara</div><div class="exp-sub">Installment</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tamara" placeholder="0" oninput="setBill('tamara',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Credit Card</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_credit" placeholder="0" oninput="setBill('credit',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row"><div><div class="exp-name">Food</div><div class="exp-sub">Monthly food budget</div></div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_food" placeholder="0" oninput="setBill('food',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:13px;margin-top:2px;border-top:2px solid #f1f5f9;">
+        <span style="font-size:15px;font-weight:800;color:#475569;">Total Fixed</span>
+        <span id="fixedTotalLbl" style="font-size:21px;font-weight:900;color:#f97316;font-family:'Courier New',monospace;"></span>
       </div>
     </div>
 
-```
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <span class="card-title" style="margin-bottom:0">Total Bills</span>
-    <span id="billsTotalExp" style="font-size:24px;font-weight:900;color:#f97316;font-family:'Courier New',monospace;"></span>
-  </div>
-</div>
-```
-
-  </div>
-
-  <!-- EXTRA SPENDING -->
-
-  <div id="tab-extra" style="display:none">
     <div class="card">
-      <div class="card-title">Add Extra Spending</div>
-      <div class="add-form">
-        <input class="add-input" id="expDesc" placeholder="What did you spend on?"/>
-        <div class="add-row">
-          <select class="add-input" id="expCat" style="flex:1 1 130px">
-            <option>Food</option>
-            <option>Grocery</option>
-            <option>Fuel</option>
-            <option>Entertainment</option>
-            <option>Clothing</option>
-            <option>Health</option>
-            <option>Shopping</option>
-            <option>Other</option>
-          </select>
-          <input class="add-input" type="number" id="expAmt" placeholder="Amount SR" style="flex:1 1 120px;font-family:'Courier New',monospace;font-weight:800"/>
-          <button class="add-btn" onclick="addExpense()">+ Add</button>
-        </div>
+      <div class="card-title">Other Spending</div>
+      <div class="add-row">
+        <input class="add-input" id="othDesc" placeholder="Description..."/>
+        <select class="add-input" id="othCat" style="flex:0 1 130px;">
+          <option>Shopping</option><option>Health</option><option>Entertainment</option>
+          <option>Clothing</option><option>Transport</option><option>Other</option>
+        </select>
+        <input class="add-input" type="number" id="othAmt" placeholder="Amount SR" style="flex:0 1 110px;font-family:'Courier New',monospace;font-weight:800;"/>
+        <button class="add-btn" onclick="addOther()">+ Add</button>
       </div>
-      <div id="expErr" style="color:#dc2626;font-size:13px;font-weight:700;margin-bottom:10px;display:none"></div>
+      <div id="othErr" style="color:#dc2626;font-size:12px;font-weight:700;margin-bottom:8px;display:none;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
+        <span style="font-size:13px;font-weight:800;color:#475569;">Other Total</span>
+        <span id="othTotalLbl" style="font-size:18px;font-weight:900;color:#f97316;font-family:'Courier New',monospace;"></span>
+      </div>
+      <div id="othList"></div>
     </div>
 
-```
-<div class="sum-grid" id="expStats"></div>
-
-<div class="card" id="catCard" style="display:none">
-  <div class="card-title">By Category</div>
-  <div id="catPills" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-</div>
-
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-    <span class="card-title" style="margin-bottom:0">All Extra Spending</span>
-    <span id="expCount" style="font-size:13px;font-weight:700;color:#94a3b8;"></span>
-  </div>
-  <div id="expList"></div>
-</div>
-```
-
+    <div id="expRemainingCard" class="card" style="border:2px solid #e9d5ff;background:#fdf4ff;"></div>
   </div>
 
-  <!-- FUTURE -->
-
-  <div id="tab-future" style="display:none">
-    <div class="card" style="background:#eff6ff;border:2px solid #bfdbfe;">
-      <div class="card-title" style="color:#3b82f6">Projection Summary</div>
-      <div id="futureNote" style="font-size:15px;font-weight:700;color:#1e40af;line-height:1.8;"></div>
+  <!-- ══ CAR PLAN ══ -->
+  <div id="tab-car" style="display:none">
+    <div class="plan-hero car-hero-bg">
+      <div class="hero-title">🚗 Car Ownership Plan — SNB Bank</div>
+      <div class="hero-amount" id="carHeroAmount">42,525 SR</div>
+      <div class="hero-sub" id="carHeroSub">Total to save by February 2030</div>
     </div>
+
+    <div class="sum-grid" id="carStatGrid"></div>
+
     <div class="card">
-      <div class="card-title">Next 6 Months</div>
-      <div id="futureCards"></div>
+      <div id="carProgressSection"></div>
+      <div id="carAlertBox" class="info-box" style="margin-bottom:0;"></div>
+    </div>
+
+    <div class="card" style="border:2px solid #dbeafe;">
+      <div class="card-title" style="color:#2563eb;">This Month — Auto Saving</div>
+      <div id="carThisMonth"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Month-by-Month Schedule</div>
+      <div id="carSchedule"></div>
     </div>
   </div>
 
-</div>
+  <!-- ══ SCHOOL FEES ══ -->
+  <div id="tab-school" style="display:none">
+    <div class="plan-hero sch-hero-bg">
+      <div class="hero-title">🏫 School Fees Plan</div>
+      <div class="hero-amount" id="schHeroAmount">3,500 SR</div>
+      <div class="hero-sub" id="schHeroSub">P1: 2,000 SR (Aug 2026) + P2: 1,500 SR (Feb 2027)</div>
+    </div>
+
+    <div class="card" style="background:#f0fdf4;border:2px solid #bbf7d0;">
+      <div class="card-title" style="color:#16a34a;">Payment Deadlines</div>
+      <div id="schPayInfo"></div>
+    </div>
+
+    <div class="sum-grid" id="schStatGrid"></div>
+
+    <div class="card">
+      <div id="schProgressSection"></div>
+      <div id="schAlertBox" class="info-box" style="margin-bottom:0;"></div>
+    </div>
+
+    <div class="card" style="border:2px solid #bbf7d0;">
+      <div class="card-title" style="color:#16a34a;">This Month — Auto Saving</div>
+      <div id="schThisMonth"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Full Saving Schedule</div>
+      <div id="schSchedule"></div>
+    </div>
+  </div>
+
+</div><!-- end .main -->
 
 <script>
-var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
-var SHORT=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-var BILL_KEYS=['family','car','mobile','rent','internet','tabby','tamara','credit'];
-var BILL_LABELS={family:'Family Support',car:'Car Lease',mobile:'Mobile Bill',rent:'Home Rent',internet:'Home Internet',tabby:'Tabby',tamara:'Tamara',credit:'Credit Card'};
-var BILL_COLORS={family:'#f97316',car:'#8b5cf6',mobile:'#ec4899',rent:'#3b82f6',internet:'#06b6d4',tabby:'#f59e0b',tamara:'#f59e0b',credit:'#10b981'};
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+var MS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var BILL_KEYS = ['family','car','mobile','rent','internet','tabby','tamara','credit','food'];
 
-var vm=3,vy=2026,activeTab='overview';
-var data={salary:0,goal:0,bills:{},expenses:[],income:[]};
+// Car Plan: April 2026 (m=3) → February 2030 (m=1), 47 months
+var CAR_TOTAL   = 42525;
+var CAR_START_M = 3;   // April index
+var CAR_START_Y = 2026;
+var CAR_END_M   = 1;   // February index
+var CAR_END_Y   = 2030;
+var CAR_N       = 47;  // total months
 
-var store=(function(){
-  var mem={};
-  try{
-    localStorage.setItem('__t','1');localStorage.removeItem('__t');
-    return{
-      get:function(k,d){var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;},
-      set:function(k,v){localStorage.setItem(k,JSON.stringify(v));}
-    };
-  }catch(e){
-    return{
-      get:function(k,d){return mem[k]!==undefined?mem[k]:d;},
-      set:function(k,v){mem[k]=v;}
-    };
-  }
+// School P1: save Mar–Jul 2026 (indices 0-4, 5 months) → pay Aug 2026
+// School P2: save Sep 2026–Jan 2027 (indices 5-9, 5 months) → pay Feb 2027
+var SCH_P1_AMT   = 2000;
+var SCH_P2_AMT   = 1500;
+var SCH_START_M  = 2;   // March index
+var SCH_START_Y  = 2026;
+var SCH_N        = 10;  // total saving months (5+5)
+var SCH_P1_MTHS  = 5;   // months 0-4 = P1 saving period
+var SCH_P2_MTHS  = 5;   // months 5-9 = P2 saving period
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+var vm = 2, vy = 2026; // current month being viewed (start = March 2026)
+var activeTab = 'overview';
+var data = { salary: 0, bills: {}, other: [] };
+
+// ═══════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════
+var S = (function(){
+  var m={};
+  try{ localStorage.setItem('_x','1'); localStorage.removeItem('_x');
+    return{ g:function(k,d){var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;},
+            s:function(k,v){localStorage.setItem(k,JSON.stringify(v));} }; }
+  catch(e){ return{ g:function(k,d){return m[k]!==undefined?m[k]:d;}, s:function(k,v){m[k]=v;} }; }
 })();
 
-function mk(s){return 'bp2_'+vy+'_'+vm+'_'+s;}
-function mkG(s){return 'bp2_global_'+s;}
-function fmt(n){return Number(n).toLocaleString();}
-function today(){var d=new Date();return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();}
+function mk(s)  { return 'bp6_'+vy+'_'+vm+'_'+s; }
+function mkG(s) { return 'bp6_g_'+s; }
 
-function loadMonth(){
-  data.salary   = store.get(mkG('salary'),0);
-  data.goal     = store.get(mkG('goal'),0);
-  data.bills    = store.get(mk('bills'),{});
-  data.expenses = store.get(mk('expenses'),[]);
-  data.income   = store.get(mk('income'),[]);
+// ─── Number helpers ───────────────────────────────────────
+function R(n)   { return Math.round(n); }
+function F(n)   { return Number(Math.abs(R(n))).toLocaleString(); }
+function today(){ var d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); }
+
+// ═══════════════════════════════════════════════════════════
+// CAR PLAN HELPERS
+// ═══════════════════════════════════════════════════════════
+// Returns 0-based month index for car plan (0=Apr2026 … 46=Feb2030), or null if outside
+function carI(m, y) {
+  var i = (y - CAR_START_Y) * 12 + (m - CAR_START_M);
+  return (i >= 0 && i < CAR_N) ? i : null;
+}
+function carMonthOf(i) {
+  var t = CAR_START_M + i;
+  return { m: t % 12, y: CAR_START_Y + Math.floor(t / 12) };
+}
+// How much has been auto-saved for car at month index i
+function getCarSave(i)  { return S.g('car6_'+i, 0); }
+function setCarSave(i,v){ S.s('car6_'+i, v); }
+function totalCarSaved() {
+  var t = 0;
+  for (var i = 0; i < CAR_N; i++) t += getCarSave(i);
+  return t;
 }
 
-function saveMonth(){
-  store.set(mk('bills'),   data.bills);
-  store.set(mk('expenses'),data.expenses);
-  store.set(mk('income'),  data.income);
+// ═══════════════════════════════════════════════════════════
+// SCHOOL HELPERS
+// ═══════════════════════════════════════════════════════════
+// Returns 0-based index for school saving months (0=Mar2026 … 9=Jan2027), or null
+function schI(m, y) {
+  var i = (y - SCH_START_Y) * 12 + (m - SCH_START_M);
+  return (i >= 0 && i < SCH_N) ? i : null;
 }
-
-function billsTotal(){
-  return BILL_KEYS.reduce(function(s,k){return s+(parseFloat(data.bills[k])||0);},0);
+function schMonthOf(i) {
+  var t = SCH_START_M + i;
+  return { m: t % 12, y: SCH_START_Y + Math.floor(t / 12) };
 }
+function getSchSave(i)  { return S.g('sch6_'+i, 0); }
+function setSchSave(i,v){ S.s('sch6_'+i, v); }
+function schSavedP1()   { var t=0; for(var i=0;i<SCH_P1_MTHS;i++) t+=getSchSave(i); return t; }
+function schSavedP2()   { var t=0; for(var i=SCH_P1_MTHS;i<SCH_N;i++) t+=getSchSave(i); return t; }
 
-function switchTab(t){
-  activeTab=t;
-  var tabs=['overview','income','expenses','extra','future'];
-  tabs.forEach(function(name){
-    var el=document.getElementById('tab-'+name);
-    if(el)el.style.display=name===t?'block':'none';
-  });
-  document.querySelectorAll('.tab-btn').forEach(function(btn,i){
-    btn.className='tab-btn'+(tabs[i]===t?' active':'');
-  });
-  render();
-}
-
-function changeMonth(d){
-  vm+=d;if(vm>11){vm=0;vy++;}if(vm<0){vm=11;vy--;}
-  loadMonth();render();
-}
-
-function updateSetting(key,val){
-  var n=parseFloat(val)||0;
-  if(key==='salary'){data.salary=n;store.set(mkG('salary'),n);}
-  if(key==='goal')  {data.goal=n;store.set(mkG('goal'),n);}
-  render();
-}
-
-function updateBill(key,val){
-  data.bills[key]=parseFloat(val)||0;
-  saveMonth();
-  render();
-}
-
-function render(){
+// ═══════════════════════════════════════════════════════════
+// CORE CALCULATION
+// ═══════════════════════════════════════════════════════════
+// For a given month (vm,vy):
+//   remaining = salary - expenses
+//   split remaining → car & school by urgency ratio
+//   urgency = amount_still_needed / months_left_in_period
+//   store the split as saved for that month
+function calcAll() {
   var salary   = data.salary;
-  var goal     = data.goal;
-  var bills    = billsTotal();
-  var extraSpend = data.expenses.reduce(function(s,e){return s+e.amt;},0);
-  var extraInc = data.income.reduce(function(s,i){return s+i.amt;},0);
-  var totalIn  = salary+extraInc;
-  var afterBills = totalIn-bills;
-  var projected  = afterBills-extraSpend;
-  var spendBudget= afterBills-goal;
-  var pctGoal  = goal>0?Math.min(100,Math.max(0,Math.round((projected/goal)*100))):0;
-  var pctSpend = spendBudget>0?Math.min(100,Math.round((extraSpend/spendBudget)*100)):extraSpend>0?100:0;
-  var saveCol  = projected>=(goal||1)?'#16a34a':projected>=0?'#d97706':'#dc2626';
-  var spendCol = pctSpend<60?'#16a34a':pctSpend<85?'#d97706':'#dc2626';
+  var fixedExp = BILL_KEYS.reduce(function(s,k){ return s+(parseFloat(data.bills[k])||0); }, 0);
+  var otherExp = data.other.reduce(function(s,e){ return s+e.amt; }, 0);
+  var totalExp = fixedExp + otherExp;
+  var remaining = salary - totalExp; // can be negative
+
+  // ── CAR urgency ──
+  var ci = carI(vm, vy);
+  var carSavedSoFar = totalCarSaved();
+  // Don't double-count this month if already stored
+  if (ci !== null) carSavedSoFar -= getCarSave(ci);
+  var carStillNeeded = Math.max(0, CAR_TOTAL - carSavedSoFar);
+  // Months left INCLUDING this month
+  var carMonthsLeft = ci !== null ? Math.max(1, CAR_N - ci) : 0;
+  var carUrgency    = carMonthsLeft > 0 ? carStillNeeded / carMonthsLeft : 0;
+  // Minimum this month to stay on track (recalculated dynamically)
+  var carMinNeeded  = carMonthsLeft > 0 ? carStillNeeded / carMonthsLeft : 0;
+
+  // ── SCHOOL urgency ──
+  var si = schI(vm, vy);
+  var isP1 = si !== null && si < SCH_P1_MTHS;
+  var isP2 = si !== null && si >= SCH_P1_MTHS;
+
+  var schSavedP1now = schSavedP1();
+  var schSavedP2now = schSavedP2();
+  if (si !== null && isP1) schSavedP1now -= getSchSave(si);
+  if (si !== null && isP2) schSavedP2now -= getSchSave(si);
+
+  var schStillNeeded = 0, schMonthsLeft = 0, schUrgency = 0, schMinNeeded = 0;
+  if (isP1) {
+    schStillNeeded = Math.max(0, SCH_P1_AMT - schSavedP1now);
+    schMonthsLeft  = Math.max(1, SCH_P1_MTHS - si);
+    schUrgency     = schStillNeeded / schMonthsLeft;
+    schMinNeeded   = schStillNeeded / schMonthsLeft;
+  } else if (isP2) {
+    schStillNeeded = Math.max(0, SCH_P2_AMT - schSavedP2now);
+    schMonthsLeft  = Math.max(1, SCH_N - si);
+    schUrgency     = schStillNeeded / schMonthsLeft;
+    schMinNeeded   = schStillNeeded / schMonthsLeft;
+  }
+
+  // ── Split remaining by urgency ──
+  var carSave = 0, schSave = 0;
+  if (remaining > 0) {
+    var totalUrgency = carUrgency + schUrgency;
+    if (totalUrgency > 0) {
+      var carW = ci !== null ? carUrgency / totalUrgency : 0;
+      var schW = si !== null ? schUrgency / totalUrgency : 0;
+      // If only one plan is active, it gets all
+      if (ci === null && si !== null)  { carW = 0; schW = 1; }
+      if (ci !== null && si === null)  { carW = 1; schW = 0; }
+      carSave = remaining * carW;
+      schSave = remaining * schW;
+    } else {
+      // No urgency data (outside all plan periods) — keep remaining for user info
+      carSave = 0; schSave = 0;
+    }
+  }
+
+  // Store the auto-split values
+  if (ci !== null) setCarSave(ci, Math.max(0, carSave));
+  if (si !== null) setSchSave(si, Math.max(0, schSave));
+
+  return {
+    salary: salary, fixedExp: fixedExp, otherExp: otherExp,
+    totalExp: totalExp, remaining: remaining,
+    ci: ci, si: si, isP1: isP1, isP2: isP2,
+    carSave: carSave, schSave: schSave,
+    carMinNeeded: carMinNeeded, schMinNeeded: schMinNeeded,
+    carMonthsLeft: carMonthsLeft, schMonthsLeft: schMonthsLeft,
+    carStillNeeded: carStillNeeded, schStillNeeded: schStillNeeded
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATA LOAD / SAVE
+// ═══════════════════════════════════════════════════════════
+function loadMonth() {
+  data.salary = S.g(mkG('salary'), 0);
+  data.bills  = S.g(mk('bills'), {});
+  data.other  = S.g(mk('other'), []);
+}
+function saveMonth() {
+  S.s(mk('bills'), data.bills);
+  S.s(mk('other'), data.other);
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function switchTab(t) {
+  activeTab = t;
+  var tabs = ['overview','income','expenses','car','school'];
+  tabs.forEach(function(n) {
+    var el = document.getElementById('tab-'+n);
+    if (el) el.style.display = (n === t) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(function(b, i) {
+    b.className = 'tab-btn' + (tabs[i] === t ? ' active' : '');
+  });
+  render();
+}
+
+function changeMonth(d) {
+  vm += d;
+  if (vm > 11) { vm = 0; vy++; }
+  if (vm < 0)  { vm = 11; vy--; }
+  loadMonth();
+  render();
+}
+
+function setSalary(v) {
+  data.salary = parseFloat(v) || 0;
+  S.s(mkG('salary'), data.salary);
+  render();
+}
+function setBill(k, v) {
+  data.bills[k] = parseFloat(v) || 0;
+  saveMonth(); render();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MASTER RENDER
+// ═══════════════════════════════════════════════════════════
+function render() {
+  var sn = calcAll();
 
   // Month bar
-  document.getElementById('monthTitle').innerHTML=MONTHS[vm]+' <span>'+vy+'</span>';
-  var isStart=(vm===3&&vy===2026);
-  var badge=document.getElementById('monthBadge');
-  badge.textContent=isStart?'START':SHORT[vm]+' '+vy;
-  badge.style.background=isStart?'#dbeafe':'#f1f5f9';
-  badge.style.color=isStart?'#1d4ed8':'#64748b';
+  document.getElementById('monthTitle').textContent = MN[vm] + ' ' + vy;
+  var ci2 = carI(vm, vy), si2 = schI(vm, vy);
+  var metaParts = [];
+  if (ci2 !== null) metaParts.push('Car month ' + (ci2+1) + '/47');
+  if (si2 !== null) metaParts.push(si2 < SCH_P1_MTHS ? 'School P1 month '+(si2+1)+'/5' : 'School P2 month '+(si2-SCH_P1_MTHS+1)+'/5');
+  document.getElementById('monthMeta').textContent = metaParts.join(' · ');
+
+  var badge = document.getElementById('monthBadge');
+  badge.textContent = MS[vm] + ' ' + vy;
+
+  // Global alert
+  var ab = document.getElementById('alertBox');
+  if (!sn.salary) {
+    ab.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#d97706;display:flex;gap:10px;line-height:1.5;';
+    ab.innerHTML = '<span>!</span> Enter your salary in the <strong>Income</strong> tab first.';
+    ab.style.display = 'flex';
+  } else if (sn.remaining < 0) {
+    ab.style.cssText = 'background:#fef2f2;border:2px solid #fecaca;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#dc2626;display:flex;gap:10px;line-height:1.5;';
+    ab.innerHTML = '<span>⚠</span> Expenses exceed salary by <strong>' + F(Math.abs(sn.remaining)) + ' SR</strong> — nothing left for saving plans.';
+    ab.style.display = 'flex';
+  } else if (sn.remaining === 0) {
+    ab.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#d97706;display:flex;gap:10px;line-height:1.5;';
+    ab.innerHTML = '<span>!</span> Nothing left after expenses — plans get 0 this month.';
+    ab.style.display = 'flex';
+  } else {
+    ab.style.cssText = 'background:#f0fdf4;border:2px solid #bbf7d0;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#16a34a;display:flex;gap:10px;line-height:1.5;';
+    ab.innerHTML = '<span>✓</span> <strong>' + F(sn.remaining) + ' SR</strong> remaining → 🚗 Car: <strong>' + F(sn.carSave) + ' SR</strong> · 🏫 School: <strong>' + F(sn.schSave) + ' SR</strong>';
+    ab.style.display = 'flex';
+  }
+
+  if (activeTab === 'overview')  renderOverview(sn);
+  if (activeTab === 'income')    renderIncome(sn);
+  if (activeTab === 'expenses')  renderExpenses(sn);
+  if (activeTab === 'car')       renderCar(sn);
+  if (activeTab === 'school')    renderSchool(sn);
+}
+
+// ═══════════════════════════════════════════════════════════
+// OVERVIEW
+// ═══════════════════════════════════════════════════════════
+function renderOverview(sn) {
+  var carSaved = totalCarSaved();
+  var p1Saved  = schSavedP1();
+  var p2Saved  = schSavedP2();
+  var carPct   = Math.min(100, Math.round(carSaved / CAR_TOTAL * 100));
+  var p1Pct    = Math.min(100, Math.round(p1Saved  / SCH_P1_AMT * 100));
+  var p2Pct    = Math.min(100, Math.round(p2Saved  / SCH_P2_AMT * 100));
+  var remCol   = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
+
+  // Completed car months
+  var carDone = 0;
+  for (var i = 0; i < CAR_N; i++) if (getCarSave(i) > 0) carDone++;
+
+  // Summary boxes
+  document.getElementById('ovSumGrid').innerHTML = [
+    { lbl:'Salary',         val:sn.salary,    col:'#16a34a', sub:'Monthly income' },
+    { lbl:'Total Expenses', val:sn.totalExp,  col:'#dc2626', sub:'Bills + Food + Other' },
+    { lbl:'Remaining',      val:sn.remaining, col:remCol,    sub:'Goes to saving plans' },
+    { lbl:'→ Car Save',     val:sn.carSave,   col:'#2563eb', sub:'This month (auto)' },
+    { lbl:'→ School Save',  val:sn.schSave,   col:'#16a34a', sub:'This month (auto)' },
+  ].map(function(b) {
+    return '<div class="sum-box" style="border-top-color:'+b.col+';">'
+      + '<div class="sum-label">'+b.lbl+'</div>'
+      + '<div class="sum-val" style="color:'+b.col+';">'+(b.val<0?'−':'')+F(b.val)+' SR</div>'
+      + '<div class="sum-sub">'+b.sub+'</div></div>';
+  }).join('');
+
+  // Progress bars
+  var pc = '';
+
+  // Car Plan
+  pc += '<div class="pbar-wrap">'
+    + '<div class="pbar-label"><span>🚗 Car Plan</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+carPct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+carPct+'%;background:#2563eb;"></div></div>'
+    + '<div class="pbar-sub">'+F(carSaved)+' / '+F(CAR_TOTAL)+' SR saved · <strong>'+carDone+' of 47 months</strong> done</div>'
+    + '</div>';
+
+  // School P1
+  pc += '<div class="pbar-wrap">'
+    + '<div class="pbar-label"><span>🏫 School — P1 (Aug 2026)</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+p1Pct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p1Pct+'%;background:#16a34a;"></div></div>'
+    + '<div class="pbar-sub">'+F(p1Saved)+' / 2,000 SR saved</div>'
+    + '</div>';
+
+  // School P2
+  pc += '<div class="pbar-wrap" style="margin-bottom:0;">'
+    + '<div class="pbar-label"><span>🏫 School — P2 (Feb 2027)</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#0d9488;">'+p2Pct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p2Pct+'%;background:#0d9488;"></div></div>'
+    + '<div class="pbar-sub">'+F(p2Saved)+' / 1,500 SR saved</div>'
+    + '</div>';
+
+  document.getElementById('ovProgressCard').innerHTML = pc;
+
+  // Breakdown rows
+  var remCol2 = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
+  document.getElementById('ovBreakdown').innerHTML = [
+    { lbl:'My Salary',       val:sn.salary,    col:'#16a34a', pre:'+' },
+    { lbl:'Fixed Expenses',  val:sn.fixedExp,  col:'#f97316', pre:'−' },
+    { lbl:'Other Spending',  val:sn.otherExp,  col:'#dc2626', pre:'−' },
+    { lbl:'Remaining',       val:sn.remaining, col:remCol2,   pre:'=' },
+    { lbl:'  ↳ 🚗 Car Plan', val:sn.carSave,   col:'#2563eb', pre:'' },
+    { lbl:'  ↳ 🏫 School',   val:sn.schSave,   col:'#16a34a', pre:'' },
+  ].map(function(r) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:2px solid #f1f5f9;">'
+      + '<span style="font-size:15px;font-weight:700;color:#475569;">'+r.lbl+'</span>'
+      + '<span style="font-size:17px;font-weight:900;font-family:\'Courier New\',monospace;color:'+r.col+';">'
+      + (r.pre ? r.pre+' ' : '') + F(Math.abs(r.val)) + ' SR</span></div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INCOME TAB
+// ═══════════════════════════════════════════════════════════
+function renderIncome(sn) {
+  document.getElementById('salaryInput').value = data.salary || '';
+  var el = document.getElementById('incomePanel');
+  if (!sn.salary) {
+    el.innerHTML = '<div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div>';
+    return;
+  }
+  var remCol = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
+  var remBg  = sn.remaining >= 0 ? '#f0fdf4' : '#fef2f2';
+  var remBc  = sn.remaining >= 0 ? '#bbf7d0' : '#fecaca';
+
+  el.innerHTML =
+    row('💰 Salary', 'Your monthly income', sn.salary, '#16a34a') +
+    row('📋 Total Expenses', 'Bills + Food + Other spending', sn.totalExp, '#dc2626') +
+    '<div style="margin:14px 0;background:'+remBg+';border:2px solid '+remBc+';border-radius:13px;padding:15px 17px;">'
+      + '<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:'+remCol+';margin-bottom:5px;">Remaining After Expenses</div>'
+      + '<div style="font-size:34px;font-weight:900;font-family:\'Courier New\',monospace;color:'+remCol+';">'+(sn.remaining<0?'−':'')+F(sn.remaining)+' SR</div>'
+      + '<div style="font-size:12px;font-weight:700;color:'+remCol+';margin-top:5px;">'
+        + (sn.remaining > 0 ? 'Auto-split between 🚗 Car Plan &amp; 🏫 School Fees by deadline urgency'
+         : sn.remaining === 0 ? 'Nothing left — plans get 0 this month'
+         : 'Expenses exceed salary — review spending')
+      + '</div></div>'
+    + (sn.remaining > 0 ? splitBox(sn) : '');
+}
+
+function row(label, sub, val, col) {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:2px solid #f3e8ff;">'
+    + '<div><div style="font-size:15px;font-weight:700;color:#1a2332;">'+label+'</div>'
+    + '<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-top:2px;">'+sub+'</div></div>'
+    + '<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(val)+' SR</span></div>';
+}
+
+function splitBox(sn) {
+  return '<div style="background:#eff6ff;border-radius:12px;padding:13px 15px;">'
+    + '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#2563eb;margin-bottom:9px;">Auto Split by Urgency</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #dbeafe;">'
+      + '<div><div style="font-size:15px;font-weight:700;color:#1a2332;">🚗 Car Plan</div>'
+      + '<div style="font-size:11px;font-weight:600;color:#94a3b8;">Min needed: '+F(sn.carMinNeeded)+' SR · '+sn.carMonthsLeft+' months left</div></div>'
+      + '<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+F(sn.carSave)+' SR</span></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;">'
+      + '<div><div style="font-size:15px;font-weight:700;color:#1a2332;">🏫 School Fees</div>'
+      + '<div style="font-size:11px;font-weight:600;color:#94a3b8;">Min needed: '+F(sn.schMinNeeded)+' SR · '+sn.schMonthsLeft+' months left</div></div>'
+      + '<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(sn.schSave)+' SR</span></div>'
+    + '<div style="font-size:11px;font-weight:600;color:#64748b;margin-top:8px;">Based on urgency. Go to Car or School tabs to see full schedule.</div></div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPENSES TAB
+// ═══════════════════════════════════════════════════════════
+function renderExpenses(sn) {
+  // Status card at top
+  var pct = sn.salary > 0 ? Math.min(100, Math.round(sn.totalExp / sn.salary * 100)) : 0;
+  var bCol = pct < 70 ? '#16a34a' : pct < 90 ? '#d97706' : '#dc2626';
+  var bBg  = pct < 70 ? '#f0fdf4' : pct < 90 ? '#fffbeb' : '#fef2f2';
+  var bBc  = pct < 70 ? '#bbf7d0' : pct < 90 ? '#fde68a' : '#fecaca';
+  var sc = document.getElementById('expStatusCard');
+  sc.style.background = bBg; sc.style.border = '2px solid '+bBc;
+  sc.innerHTML = '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;">Expenses vs Salary</div>'
+    + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">'
+      + '<span style="font-size:13px;font-weight:700;color:#475569;">Spent: <strong style="color:'+bCol+'">'+F(sn.totalExp)+' SR</strong></span>'
+      + '<span style="font-size:13px;font-weight:700;color:#475569;">Salary: '+F(sn.salary)+' SR</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+bCol+';"></div></div>'
+    + '<div style="font-size:11px;font-weight:700;color:'+bCol+';margin-top:5px;text-align:right;">'+pct+'% of salary used on expenses</div>';
+
+  // Fill fixed inputs
+  BILL_KEYS.forEach(function(k) {
+    var el = document.getElementById('b_'+k);
+    if (el) el.value = data.bills[k] || '';
+  });
+  document.getElementById('fixedTotalLbl').textContent = F(sn.fixedExp) + ' SR';
+  document.getElementById('othTotalLbl').textContent   = F(sn.otherExp) + ' SR';
+
+  // Other list
+  var list = document.getElementById('othList');
+  if (!data.other.length) {
+    list.innerHTML = '<div class="empty">No other spending logged</div>';
+  } else {
+    list.innerHTML = '<div class="item-list">' + data.other.map(function(e) {
+      return '<div class="item-row">'
+        + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+e.desc+'</div>'
+        + '<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-top:2px;">'+e.date+' · '+e.cat+'</div></div>'
+        + '<div style="display:flex;align-items:center;">'
+        + '<span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#f97316;">'+F(e.amt)+' SR</span>'
+        + '<button class="del-btn" onclick="delOther('+e.id+')">×</button></div></div>';
+    }).join('') + '</div>';
+  }
+
+  // Remaining card
+  var remCol = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
+  var remBg  = sn.remaining >= 0 ? '#f0fdf4' : '#fef2f2';
+  var remBc  = sn.remaining >= 0 ? '#bbf7d0' : '#fecaca';
+  var rc = document.getElementById('expRemainingCard');
+  rc.style.background = remBg; rc.style.border = '2px solid '+remBc;
+  rc.innerHTML = '<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:'+remCol+';margin-bottom:6px;">Remaining → Goes to Saving Plans</div>'
+    + '<div style="font-size:34px;font-weight:900;font-family:\'Courier New\',monospace;color:'+remCol+';">'+(sn.remaining<0?'−':'')+F(sn.remaining)+' SR</div>'
+    + (sn.remaining > 0 ?
+        '<div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">'
+        + '<div style="flex:1 1 120px;background:#fff;border-radius:10px;padding:10px 13px;">'
+          + '<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:3px;">🚗 Car Plan</div>'
+          + '<div style="font-size:20px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+F(sn.carSave)+' SR</div></div>'
+        + '<div style="flex:1 1 120px;background:#fff;border-radius:10px;padding:10px 13px;">'
+          + '<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:3px;">🏫 School</div>'
+          + '<div style="font-size:20px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(sn.schSave)+' SR</div></div>'
+        + '</div>'
+      : '<div style="font-size:12px;font-weight:700;color:'+remCol+';margin-top:7px;">'
+          + (sn.remaining === 0 ? 'Plans get 0 this month.' : 'Reduce expenses to save for your plans.')
+          + '</div>');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CAR PLAN TAB
+// ═══════════════════════════════════════════════════════════
+function renderCar(sn) {
+  var carSaved = totalCarSaved();
+  var carRem   = Math.max(0, CAR_TOTAL - carSaved);
+  var pct      = Math.min(100, Math.round(carSaved / CAR_TOTAL * 100));
+  var ci       = sn.ci;
+
+  // Months done
+  var carDone = 0;
+  for (var i = 0; i < CAR_N; i++) if (getCarSave(i) > 0) carDone++;
+
+  // Current month info
+  var mLeft       = ci !== null ? Math.max(0, CAR_N - ci) : 0;
+  var minNeeded   = mLeft > 0 ? carRem / mLeft : 0; // recalculated each month
+  var thisMonthSave = ci !== null ? getCarSave(ci) : 0;
+
+  document.getElementById('carHeroAmount').textContent = F(carRem) + ' SR';
+  document.getElementById('carHeroSub').textContent    = F(carSaved) + ' SR saved · ' + F(carRem) + ' SR remaining · Due Feb 2030';
+
+  // Stat grid
+  document.getElementById('carStatGrid').innerHTML = [
+    { lbl:'Total Saved',    val:F(carSaved)+' SR',    col:'#16a34a', sub:'out of '+F(CAR_TOTAL)+' SR' },
+    { lbl:'Months Done',    val:carDone+' / 47',      col:'#2563eb', sub:'months completed' },
+    { lbl:'Months Left',    val:mLeft,                col:'#7c3aed', sub:'to Feb 2030' },
+    { lbl:'Min This Month', val:F(minNeeded)+' SR',   col:'#d97706', sub:'to stay on track' },
+  ].map(function(s) {
+    return '<div class="plan-stat"><div class="sum-label">'+s.lbl+'</div>'
+      + '<div class="sum-val" style="color:'+s.col+';font-size:18px;">'+s.val+'</div>'
+      + '<div class="sum-sub">'+s.sub+'</div></div>';
+  }).join('');
+
+  // Progress
+  document.getElementById('carProgressSection').innerHTML =
+    '<div class="pbar-label"><span>Ownership Progress</span>'
+    + '<span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+pct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:#2563eb;"></div></div>'
+    + '<div class="pbar-sub" style="margin-bottom:12px;">'+F(carSaved)+' SR saved · '+carDone+' of 47 months done</div>';
 
   // Alert
-  var alertBox=document.getElementById('alertBox');
-  if(salary===0){
-    alertBox.style.cssText='background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:16px 18px;margin-bottom:16px;font-size:15px;font-weight:700;color:#d97706;display:flex;align-items:flex-start;gap:12px;line-height:1.5;';
-    alertBox.innerHTML='<span style="font-size:20px">!</span> Go to <strong>Income</strong> tab to enter your salary first.';
+  var ca = document.getElementById('carAlertBox');
+  if (ci === null) {
+    ca.style.cssText = 'background:#f1f5f9;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:0;display:flex;gap:8px;';
+    ca.innerHTML = '<span>ℹ</span> Car Plan is active Apr 2026 – Feb 2030. Navigate to those months.';
+  } else if (thisMonthSave >= minNeeded && minNeeded > 0) {
+    ca.style.cssText = 'background:#f0fdf4;border:2px solid #bbf7d0;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#16a34a;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
+    ca.innerHTML = '<span>✓</span> Saving <strong>'+F(thisMonthSave)+' SR</strong> this month — <strong>'+F(thisMonthSave - minNeeded)+' SR</strong> above minimum. You\'re ahead of schedule.';
+  } else if (thisMonthSave > 0) {
+    ca.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#d97706;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
+    ca.innerHTML = '<span>!</span> Saving <strong>'+F(thisMonthSave)+' SR</strong> — below minimum of <strong>'+F(minNeeded)+' SR</strong>. Shortfall will be spread over remaining months.';
   } else {
-    var status=projected<0?'danger':projected<goal?'warn':'good';
-    var aMap={
-      danger:{bg:'#fef2f2',bc:'#fecaca',col:'#dc2626',msg:'Over budget by '+fmt(Math.abs(projected))+' SR — cannot reach your saving goal.'},
-      warn:  {bg:'#fffbeb',bc:'#fde68a',col:'#d97706',msg:fmt(goal-projected)+' SR short of your '+fmt(goal)+' SR goal.'},
-      good:  {bg:'#f0fdf4',bc:'#bbf7d0',col:'#16a34a',msg:'On track to save '+fmt(projected)+' SR'+(projected>=goal?' — '+fmt(projected-goal)+' SR above goal!':'.')},
-    };
-    var al=aMap[status];
-    alertBox.style.cssText='background:'+al.bg+';border:2px solid '+al.bc+';border-radius:16px;padding:16px 18px;margin-bottom:16px;font-size:15px;font-weight:700;color:'+al.col+';display:flex;align-items:flex-start;gap:12px;line-height:1.5;';
-    alertBox.innerHTML='<span style="font-size:20px">'+(status==='good'?'✓':'!')+'</span> '+al.msg;
+    ca.style.cssText = 'background:#fef2f2;border:2px solid #fecaca;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#dc2626;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
+    ca.innerHTML = '<span>!</span> No car saving this month. Minimum needed: <strong>'+F(minNeeded)+' SR</strong>. Add expenses and salary so the app can auto-split.';
   }
 
-  if(activeTab==='overview') renderOverview(totalIn,bills,extraSpend,extraInc,projected,spendBudget,pctGoal,pctSpend,saveCol,spendCol,goal,salary);
-  if(activeTab==='income')   renderIncome(extraInc);
-  if(activeTab==='expenses') renderExpenses_tab(bills);
-  if(activeTab==='extra')    renderExtra(extraSpend,spendBudget,pctSpend,spendCol);
-  if(activeTab==='future')   renderFuture(bills,goal,salary);
-}
+  // This month card
+  document.getElementById('carThisMonth').innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+      + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed to stay on track</div>'
+      + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">Recalculated from remaining balance ÷ months left</div></div>'
+      + '<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#d97706;">'+F(minNeeded)+' SR</span></div>'
+    + '<div style="height:2px;background:#f1f5f9;margin:10px 0;"></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+      + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Auto-saved this month</div>'
+      + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">From remaining after expenses (split by urgency)</div></div>'
+      + '<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+F(thisMonthSave)+' SR</span></div>'
+    + (ci === null ? '' :
+        '<div style="margin-top:12px;background:#eff6ff;border-radius:10px;padding:10px 14px;">'
+        + '<div style="font-size:11px;font-weight:700;color:#94a3b8;">After this month: '+F(Math.max(0,carRem-thisMonthSave))+' SR remaining over '+(mLeft-1)+' months</div></div>');
 
-function renderOverview(totalIn,bills,extraSpend,extraInc,projected,spendBudget,pctGoal,pctSpend,saveCol,spendCol,goal,salary){
-  var boxes=[
-    {lbl:'Total Income',     val:totalIn,    col:'#16a34a', sub:extraInc>0?'+ '+fmt(extraInc)+' SR extra':'Salary only'},
-    {lbl:'Total Bills',      val:bills,      col:'#f97316', sub:'8 categories'},
-    {lbl:'Extra Spending',   val:extraSpend, col:spendCol,  sub:data.expenses.length+' transactions'},
-    {lbl:'Projected Saving', val:projected,  col:saveCol,   sub:'Goal: '+fmt(goal)+' SR'},
-  ];
-  var sg='';
-  boxes.forEach(function(b){
-    sg+='<div class="sum-box" style="border-top-color:'+b.col+'"><div class="sum-label">'+b.lbl+'</div><div class="sum-val" style="color:'+b.col+'">'+fmt(b.val)+' SR</div><div class="sum-sub">'+b.sub+'</div></div>';
-  });
-  document.getElementById('sumGrid').innerHTML=sg;
-
-  var pc='';
-  if(goal>0){
-    pc+='<div class="prog-label"><span>Saving Goal Progress</span><span class="prog-pct" style="color:'+saveCol+'">'+pctGoal+'%</span></div>'
-      +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pctGoal+'%;background:'+saveCol+'"></div></div>'
-      +'<div class="prog-sub">'+fmt(projected)+' / '+fmt(goal)+' SR</div>';
+  // Schedule (current + next 11 months)
+  var sch = '', runRem = carRem, runM = mLeft;
+  var startI = ci !== null ? ci : carI(2, 2026) || 0; // default to first active
+  var count = 0;
+  for (var j = startI; j < CAR_N && count < 12; j++, count++) {
+    var mo    = carMonthOf(j);
+    var saved = getCarSave(j);
+    var req   = runM > 0 ? runRem / runM : 0;
+    var isNow = (j === ci);
+    var sc2   = saved > 0 && saved >= req ? '#16a34a' : saved > 0 ? '#d97706' : '#94a3b8';
+    sch += '<div class="month-sched-row" style="'+(isNow?'background:#eff6ff;border-radius:10px;padding:11px;margin:-2px 0;':'')+'">'
+      + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+MN[mo.m]+' '+mo.y
+        + (isNow ? ' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 7px;border-radius:5px;font-weight:800;">NOW</span>' : '')+'</div>'
+        + '<div style="font-size:11px;font-weight:600;color:#94a3b8;">Month '+(j+1)+'/47 · min: '+F(req)+' SR</div></div>'
+      + '<div style="text-align:right;">'
+        + '<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(saved>0?sc2:'#cbd5e1')+';">'+(saved>0?F(saved)+' SR':'—')+'</div>'
+        + '<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+(saved>0?(saved>=req?'✓ on track':'below min'):'not saved yet')+'</div>'
+      + '</div></div>';
+    runRem = Math.max(0, runRem - saved);
+    runM   = Math.max(0, runM - 1);
   }
-  if(spendBudget>0){
-    pc+='<div class="prog-label"><span>Extra Spending Used</span><span class="prog-pct" style="color:'+spendCol+'">'+pctSpend+'%</span></div>'
-      +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pctSpend+'%;background:'+spendCol+'"></div></div>'
-      +'<div class="prog-sub">'+fmt(extraSpend)+' / '+fmt(spendBudget)+' SR</div>';
+  document.getElementById('carSchedule').innerHTML = sch || '<div class="empty">Navigate to Apr 2026 – Feb 2030</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCHOOL FEES TAB
+// ═══════════════════════════════════════════════════════════
+function renderSchool(sn) {
+  var p1Saved = schSavedP1();
+  var p2Saved = schSavedP2();
+  var p1Rem   = Math.max(0, SCH_P1_AMT - p1Saved);
+  var p2Rem   = Math.max(0, SCH_P2_AMT - p2Saved);
+  var p1Pct   = Math.min(100, Math.round(p1Saved / SCH_P1_AMT * 100));
+  var p2Pct   = Math.min(100, Math.round(p2Saved / SCH_P2_AMT * 100));
+  var si      = sn.si;
+  var isP1    = sn.isP1, isP2 = sn.isP2;
+
+  // Months left for current phase
+  var ml1 = si !== null && isP1 ? Math.max(0, SCH_P1_MTHS - si) : (si === null && p1Rem > 0 ? 0 : 0);
+  var ml2 = si !== null && isP2 ? Math.max(0, SCH_N - si) : 0;
+  var min1 = ml1 > 0 ? p1Rem / ml1 : 0;
+  var min2 = ml2 > 0 ? p2Rem / ml2 : 0;
+  var thisSchSave = si !== null ? getSchSave(si) : 0;
+
+  document.getElementById('schHeroAmount').textContent = F(p1Rem + p2Rem) + ' SR';
+  document.getElementById('schHeroSub').textContent    = 'P1: ' + F(p1Rem) + ' SR left · P2: ' + F(p2Rem) + ' SR left';
+
+  // Payment info
+  document.getElementById('schPayInfo').innerHTML =
+    payInfoRow('Payment 1', 'Due August 2026 · save Mar–Jul 2026 (5 months)', SCH_P1_AMT, p1Saved, p1Rem, '#16a34a') +
+    payInfoRow('Payment 2', 'Due February 2027 · save Sep 2026–Jan 2027 (5 months)', SCH_P2_AMT, p2Saved, p2Rem, '#0d9488');
+
+  function payInfoRow(title, sub, total, saved, rem, col) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:11px;padding:13px 15px;margin-bottom:8px;">'
+      + '<div><div style="font-size:15px;font-weight:800;color:#1a2332;">'+title+'</div>'
+        + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+sub+'</div></div>'
+      + '<div style="text-align:right;">'
+        + '<div style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(total)+' SR</div>'
+        + '<div style="font-size:11px;font-weight:700;color:'+col+';">Saved: '+F(saved)+' SR · Left: '+F(rem)+' SR</div>'
+      + '</div></div>';
   }
-  document.getElementById('progCard').innerHTML=pc||'<div class="empty">Set your salary and goal in the Income tab</div>';
 
-  var rows=[
-    {lbl:'Main Salary',     val:salary,     col:'#16a34a', pre:'+'},
-    {lbl:'Extra Income',    val:data.income.reduce(function(s,i){return s+i.amt;},0), col:'#10b981', pre:'+'},
-    {lbl:'Bills Total',     val:bills,      col:'#f97316', pre:'−'},
-    {lbl:'Extra Spending',  val:extraSpend, col:'#dc2626', pre:'−'},
-    {lbl:'Remaining',       val:projected,  col:saveCol,   pre:'='},
-  ];
-  var bd='';
-  rows.forEach(function(r){
-    bd+='<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:2px solid #f1f5f9;">'
-      +'<span style="font-size:17px;font-weight:700;color:#475569">'+r.lbl+'</span>'
-      +'<span style="font-size:19px;font-weight:900;font-family:\'Courier New\',monospace;color:'+r.col+'">'+r.pre+' '+fmt(r.val)+' SR</span></div>';
-  });
-  document.getElementById('breakdownList').innerHTML=bd;
-}
+  // Stat grid
+  document.getElementById('schStatGrid').innerHTML = [
+    { lbl:'P1 Saved',     val:F(p1Saved)+' SR',   col:'#16a34a', sub:'of 2,000 SR' },
+    { lbl:'P1 Remaining', val:F(p1Rem)+' SR',      col:p1Rem===0?'#16a34a':'#d97706', sub:'due Aug 2026' },
+    { lbl:'P2 Saved',     val:F(p2Saved)+' SR',    col:'#0d9488', sub:'of 1,500 SR' },
+    { lbl:'P2 Remaining', val:F(p2Rem)+' SR',      col:p2Rem===0?'#16a34a':'#0d9488', sub:'due Feb 2027' },
+  ].map(function(s) {
+    return '<div class="plan-stat"><div class="sum-label">'+s.lbl+'</div>'
+      + '<div class="sum-val" style="color:'+s.col+';font-size:17px;">'+s.val+'</div>'
+      + '<div class="sum-sub">'+s.sub+'</div></div>';
+  }).join('');
 
-function renderIncome(extraTotal){
-  document.getElementById('salaryInput').value=data.salary||'';
-  document.getElementById('goalInput').value=data.goal||'';
-  document.getElementById('incTotal').textContent=fmt(extraTotal)+' SR';
-  var list=document.getElementById('incList');
-  if(data.income.length===0){list.innerHTML='<div class="empty">No extra income this month</div>';return;}
-  var h='<div class="item-list">';
-  data.income.forEach(function(item){
-    h+='<div class="item-row"><div><div class="item-desc">'+item.desc+'</div><div class="item-meta">'+item.date+' &middot; '+item.cat+'</div></div>'
-      +'<div style="display:flex;align-items:center;gap:8px"><span class="item-amt" style="color:#16a34a">+'+fmt(item.amt)+' SR</span>'
-      +'<button class="del-btn" onclick="delItem(\'income\','+item.id+')">&#215;</button></div></div>';
-  });
-  list.innerHTML=h+'</div>';
-}
+  // Progress bars
+  document.getElementById('schProgressSection').innerHTML =
+    '<div class="pbar-label"><span>🏫 P1 — Aug 2026</span>'
+      + '<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+p1Pct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p1Pct+'%;background:#16a34a;"></div></div>'
+    + '<div class="pbar-sub">'+F(p1Saved)+' / 2,000 SR saved</div>'
+    + '<div class="pbar-label" style="margin-top:6px;"><span>🏫 P2 — Feb 2027</span>'
+      + '<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#0d9488;">'+p2Pct+'%</span></div>'
+    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+p2Pct+'%;background:#0d9488;"></div></div>'
+    + '<div class="pbar-sub" style="margin-bottom:12px;">'+F(p2Saved)+' / 1,500 SR saved</div>';
 
-function renderExpenses_tab(total){
-  // fill inputs
-  BILL_KEYS.forEach(function(k){
-    var el=document.getElementById('b_'+k);
-    if(el)el.value=data.bills[k]||'';
-  });
-  document.getElementById('billsTotalExp').textContent=fmt(total)+' SR';
-}
-
-function renderExtra(extraSpend,spendBudget,pctSpend,spendCol){
-  var left=Math.max(0,spendBudget-extraSpend);
-  document.getElementById('expStats').innerHTML=
-    '<div class="sum-box" style="border-top-color:'+spendCol+'"><div class="sum-label">Total Spent</div><div class="sum-val" style="color:'+spendCol+'">'+fmt(extraSpend)+' SR</div><div class="sum-sub">'+pctSpend+'% of budget</div></div>'
-    +'<div class="sum-box" style="border-top-color:#16a34a"><div class="sum-label">Budget Left</div><div class="sum-val" style="color:#16a34a">'+fmt(left)+' SR</div><div class="sum-sub">'+data.expenses.length+' items</div></div>';
-
-  var catTotals={};
-  data.expenses.forEach(function(e){catTotals[e.cat]=(catTotals[e.cat]||0)+e.amt;});
-  var catCard=document.getElementById('catCard');
-  if(Object.keys(catTotals).length>0){
-    catCard.style.display='block';
-    var pills='';
-    Object.keys(catTotals).sort(function(a,b){return catTotals[b]-catTotals[a];}).forEach(function(cat){
-      pills+='<div style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:center;">'
-        +'<span style="font-size:15px;font-weight:700;color:#1a2332">'+cat+'</span>'
-        +'<span style="font-size:16px;font-weight:900;color:#d97706;font-family:\'Courier New\',monospace">'+fmt(catTotals[cat])+' SR</span></div>';
-    });
-    document.getElementById('catPills').innerHTML=pills;
-  } else {catCard.style.display='none';}
-
-  document.getElementById('expCount').textContent=data.expenses.length+' items';
-  var list=document.getElementById('expList');
-  if(data.expenses.length===0){list.innerHTML='<div class="empty">No extra spending this month</div>';return;}
-  var h='<div class="item-list">';
-  data.expenses.forEach(function(e){
-    h+='<div class="item-row"><div><div class="item-desc">'+e.desc+'</div><div class="item-meta">'+e.date+' &middot; <span class="tag" style="background:#eff6ff;color:#3b82f6">'+e.cat+'</span></div></div>'
-      +'<div style="display:flex;align-items:center;gap:8px"><span class="item-amt" style="color:#dc2626">'+fmt(e.amt)+' SR</span>'
-      +'<button class="del-btn" onclick="delItem(\'expenses\','+e.id+')">&#215;</button></div></div>';
-  });
-  list.innerHTML=h+'</div>';
-}
-
-function renderFuture(bills,goal,salary){
-  var el=document.getElementById('futureNote');
-  if(salary===0){el.innerHTML='Set your salary in the Income tab to see projections.';return;}
-  var saving=salary-bills;
-  el.innerHTML='Current bills: <strong>'+fmt(bills)+' SR</strong><br>'
-    +'Monthly saving potential: <strong style="color:'+(saving>=goal?'#16a34a':'#dc2626')+'">'+fmt(saving)+' SR</strong><br>'
-    +'Your saving goal: <strong>'+fmt(goal)+' SR</strong><br>'
-    +(saving>=goal?'<span style="color:#16a34a">✓ You are meeting your saving goal!</span>':'<span style="color:#dc2626">! Bills are reducing your savings. Review the Expenses tab.</span>');
-
-  var cards='';
-  for(var i=1;i<=6;i++){
-    var m=vm+i,y=vy;
-    if(m>11){m-=12;y++;}
-    var s=salary-bills;
-    var col=s>=(goal||0)?'#16a34a':s>=0?'#d97706':'#dc2626';
-    var bg=s>=(goal||0)?'#f0fdf4':s>=0?'#fffbeb':'#fef2f2';
-    var bc=s>=(goal||0)?'#bbf7d0':s>=0?'#fde68a':'#fecaca';
-    cards+='<div style="background:'+bg+';border:2px solid '+bc+';border-radius:14px;padding:15px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">'
-      +'<div><div style="font-size:18px;font-weight:800;color:#1a2332">'+MONTHS[m]+' '+y+'</div>'
-      +'<div style="font-size:13px;font-weight:600;color:#64748b;margin-top:3px">Bills: '+fmt(bills)+' SR</div></div>'
-      +'<div style="font-size:24px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+'">'+fmt(s)+' SR</div></div>';
+  // Alert
+  var sa = document.getElementById('schAlertBox');
+  var activePhase = isP1 ? 'P1 (Aug 2026)' : isP2 ? 'P2 (Feb 2027)' : null;
+  var minNeededSch = isP1 ? min1 : isP2 ? min2 : 0;
+  if (si === null) {
+    sa.style.cssText = 'background:#f1f5f9;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:0;display:flex;gap:8px;';
+    sa.innerHTML = '<span>ℹ</span> School saving is active Mar–Jul 2026 (P1) and Sep 2026–Jan 2027 (P2).';
+  } else if (thisSchSave >= minNeededSch && minNeededSch > 0) {
+    sa.style.cssText = 'background:#f0fdf4;border:2px solid #bbf7d0;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#16a34a;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
+    sa.innerHTML = '<span>✓</span> Saving <strong>'+F(thisSchSave)+' SR</strong> for '+activePhase+' — <strong>'+F(thisSchSave-minNeededSch)+' SR</strong> above minimum.';
+  } else if (thisSchSave > 0) {
+    sa.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#d97706;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
+    sa.innerHTML = '<span>!</span> Saving <strong>'+F(thisSchSave)+' SR</strong> for '+activePhase+' — below minimum of <strong>'+F(minNeededSch)+' SR</strong>. Shortfall spreads to next months.';
+  } else {
+    sa.style.cssText = 'background:#fef2f2;border:2px solid #fecaca;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#dc2626;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
+    sa.innerHTML = '<span>!</span> No school saving this month'+(activePhase?' for '+activePhase:'')+'. Min needed: <strong>'+F(minNeededSch)+' SR</strong>.';
   }
-  document.getElementById('futureCards').innerHTML=cards;
+
+  // This month
+  document.getElementById('schThisMonth').innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+      + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed this month</div>'
+        + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+(isP1?'For P1: '+F(p1Rem)+' SR left over '+ml1+' months':isP2?'For P2: '+F(p2Rem)+' SR left over '+ml2+' months':'Not in active saving period')+'</div></div>'
+      + '<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#d97706;">'+F(minNeededSch)+' SR</span></div>'
+    + '<div style="height:2px;background:#f1f5f9;margin:10px 0;"></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+      + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Auto-saved this month</div>'
+        + '<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">From remaining after expenses (split by urgency)</div></div>'
+      + '<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(thisSchSave)+' SR</span></div>';
+
+  // Full 10-month schedule
+  var sched = '';
+  var runP1 = p1Rem, rmP1 = SCH_P1_MTHS;
+  var runP2 = p2Rem, rmP2 = SCH_P2_MTHS;
+  // Recalculate from month 0
+  var rP1f = p1Saved, rP2f = p2Saved;
+  for (var j = 0; j < SCH_N; j++) {
+    var mo2    = schMonthOf(j);
+    var savedJ = getSchSave(j);
+    var phase  = j < SCH_P1_MTHS ? 1 : 2;
+    var phCol  = phase === 1 ? '#16a34a' : '#0d9488';
+    var phBg   = phase === 1 ? '#dcfce7' : '#ccfbf1';
+    // Minimum for this slot (recalculated based on what was saved so far)
+    var rem4   = phase === 1 ? Math.max(0, SCH_P1_AMT - rP1f) : Math.max(0, SCH_P2_AMT - rP2f);
+    var mLeft4 = phase === 1 ? Math.max(1, SCH_P1_MTHS - j) : Math.max(1, SCH_N - j);
+    var req4   = rem4 / mLeft4;
+    var isNow2 = (j === si);
+    var sc3    = savedJ > 0 && savedJ >= req4 ? '#16a34a' : savedJ > 0 ? '#d97706' : '#94a3b8';
+
+    sched += '<div class="month-sched-row" style="'+(isNow2?'background:#f0fdf4;border-radius:10px;padding:11px;margin:-2px 0;':'')+'">'
+      + '<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+MN[mo2.m]+' '+mo2.y
+        + ' <span style="font-size:10px;background:'+phBg+';color:'+phCol+';padding:2px 6px;border-radius:5px;font-weight:800;">P'+phase+'</span>'
+        + (isNow2 ? ' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 6px;border-radius:5px;font-weight:800;">NOW</span>' : '')+'</div>'
+        + '<div style="font-size:11px;font-weight:600;color:#94a3b8;">Month '+(j<SCH_P1_MTHS?j+1:j-SCH_P1_MTHS+1)+(phase===1?'/5 P1':'/5 P2')+' · min: '+F(req4)+' SR</div></div>'
+      + '<div style="text-align:right;">'
+        + '<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(savedJ>0?sc3:'#cbd5e1')+';">'+(savedJ>0?F(savedJ)+' SR':'—')+'</div>'
+        + '<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+(savedJ>0?(savedJ>=req4?'✓ on track':'below min'):'not saved yet')+'</div>'
+      + '</div></div>';
+
+    if (phase === 1) rP1f += savedJ;
+    else             rP2f += savedJ;
+  }
+  document.getElementById('schSchedule').innerHTML = sched;
 }
 
-function addIncome(){
-  var desc=document.getElementById('incDesc').value.trim();
-  var amt=parseFloat(document.getElementById('incAmt').value);
-  var cat=document.getElementById('incCat').value;
-  var err=document.getElementById('incErr');
-  if(!desc){err.textContent='Please enter a description';err.style.display='block';return;}
-  if(!amt||amt<=0){err.textContent='Please enter a valid amount';err.style.display='block';return;}
-  err.style.display='none';
-  data.income.unshift({id:Date.now(),desc:desc,amt:amt,cat:cat,date:today()});
+// ═══════════════════════════════════════════════════════════
+// OTHER SPENDING
+// ═══════════════════════════════════════════════════════════
+function addOther() {
+  var desc = document.getElementById('othDesc').value.trim();
+  var amt  = parseFloat(document.getElementById('othAmt').value);
+  var err  = document.getElementById('othErr');
+  if (!desc) { err.textContent='Enter a description'; err.style.display='block'; return; }
+  if (!amt || amt <= 0) { err.textContent='Enter a valid amount'; err.style.display='block'; return; }
+  err.style.display = 'none';
+  data.other.unshift({ id:Date.now(), desc:desc, amt:amt, cat:document.getElementById('othCat').value, date:today() });
   saveMonth();
-  document.getElementById('incDesc').value='';
-  document.getElementById('incAmt').value='';
+  document.getElementById('othDesc').value = '';
+  document.getElementById('othAmt').value  = '';
   render();
 }
-
-function addExpense(){
-  var desc=document.getElementById('expDesc').value.trim();
-  var amt=parseFloat(document.getElementById('expAmt').value);
-  var cat=document.getElementById('expCat').value;
-  var err=document.getElementById('expErr');
-  if(!desc){err.textContent='Please enter a description';err.style.display='block';return;}
-  if(!amt||amt<=0){err.textContent='Please enter a valid amount';err.style.display='block';return;}
-  err.style.display='none';
-  data.expenses.unshift({id:Date.now(),desc:desc,amt:amt,cat:cat,date:today()});
-  saveMonth();
-  document.getElementById('expDesc').value='';
-  document.getElementById('expAmt').value='';
-  render();
+function delOther(id) {
+  data.other = data.other.filter(function(x){ return x.id !== id; });
+  saveMonth(); render();
 }
 
-function delItem(type,id){
-  data[type]=data[type].filter(function(x){return x.id!==id;});
-  saveMonth();render();
-}
-
-document.addEventListener('keydown',function(e){
-  if(e.key!=='Enter')return;
-  if(activeTab==='income') addIncome();
-  if(activeTab==='extra')  addExpense();
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && activeTab === 'expenses') addOther();
 });
 
 loadMonth();
 render();
 </script>
-
 </body>
 </html>
