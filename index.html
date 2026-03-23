@@ -19,11 +19,14 @@ button{cursor:pointer;}
 .logo{font-weight:900;font-size:18px;color:#1a2332;display:flex;align-items:center;gap:8px;}
 .logo-dot{width:11px;height:11px;border-radius:50%;background:#3b82f6;}
 .logo small{color:#94a3b8;font-weight:500;font-size:13px;}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.month-badge{font-size:11px;font-weight:800;padding:5px 11px;border-radius:20px;background:#dbeafe;color:#1d4ed8;font-family:'Courier New',monospace;}
+.settings-btn{background:#f1f5f9;border:2px solid #e2e8f0;color:#475569;width:36px;height:36px;border-radius:10px;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;}
 .tabs-wrap{background:#fff;border-bottom:2px solid #e2e8f0;}
 .tabs{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 14px;max-width:600px;margin:0 auto;}
 .tab-btn{background:#f1f5f9;border:2px solid transparent;color:#475569;padding:9px 18px;border-radius:12px;font-size:15px;font-weight:700;white-space:nowrap;flex-shrink:0;}
 .tab-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff;}
-.main{max-width:600px;margin:0 auto;padding:18px 14px 60px;}
+.main{max-width:600px;margin:0 auto;padding:18px 14px 80px;}
 .month-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
 .nav-btn{background:#f1f5f9;border:2px solid #e2e8f0;color:#475569;width:44px;height:44px;border-radius:12px;font-size:24px;line-height:1;padding:0;font-weight:700;}
 .month-title{font-weight:900;font-size:24px;color:#1a2332;text-align:center;}
@@ -65,17 +68,44 @@ select.add-input{background:#f8fafc;}
 .plan-stat{flex:1 1 120px;background:#fff;border-radius:15px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
 .month-sched-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:2px solid #f1f5f9;}
 .month-sched-row:last-child{border-bottom:none;}
-.info-box{border-radius:13px;padding:13px 15px;font-size:14px;font-weight:700;line-height:1.6;margin-bottom:12px;}
 .salary-input-big{background:#f8fafc;border:2px solid #e2e8f0;color:#1a2332;padding:11px 13px;border-radius:13px;font-size:22px;font-weight:900;font-family:'Courier New',monospace;width:150px;text-align:right;}
 .salary-input-big:focus{border-color:#3b82f6;outline:none;}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:24px;padding:28px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.modal h2{font-size:20px;font-weight:900;color:#1a2332;margin-bottom:8px;}
+.modal p{font-size:14px;color:#64748b;font-weight:600;line-height:1.6;margin-bottom:20px;}
+.modal-btns{display:flex;gap:10px;}
+.modal-cancel{flex:1;background:#f1f5f9;border:2px solid #e2e8f0;color:#475569;font-weight:800;border-radius:12px;padding:13px;font-size:15px;}
+.modal-confirm{flex:1;background:#dc2626;border:none;color:#fff;font-weight:800;border-radius:12px;padding:13px;font-size:15px;}
+.split-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f1f5f9;}
+.split-row:last-child{border-bottom:none;}
+.tabby-badge{display:inline-block;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:6px;font-size:10px;font-weight:800;padding:2px 7px;margin-left:6px;vertical-align:middle;}
 </style>
 </head>
 <body>
 
+<!-- CLEAR DATA MODAL -->
+
+<div class="modal-overlay" id="clearModal">
+  <div class="modal">
+    <h2>⚠️ Clear All Data?</h2>
+    <p>This will permanently delete all your salary, expenses, savings records, and all plan progress (Car Plan, School Fees, Brother Debt). This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeClearModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmClearAll()">Yes, Clear Everything</button>
+    </div>
+  </div>
+</div>
+
 <nav class="nav">
   <div class="nav-inner">
     <div class="logo"><div class="logo-dot"></div>My Salary <small>/ Budget Pro</small></div>
-    <div id="monthBadge" style="font-size:11px;font-weight:800;padding:5px 11px;border-radius:20px;background:#dbeafe;color:#1d4ed8;font-family:'Courier New',monospace;"></div>
+    <div class="nav-right">
+      <div class="month-badge" id="monthBadge"></div>
+      <button class="settings-btn" onclick="openClearModal()" title="Clear all data">🗑️</button>
+    </div>
   </div>
 </nav>
 
@@ -165,8 +195,13 @@ select.add-input{background:#f8fafc;}
         <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_rent" placeholder="0" oninput="setBill('rent',this.value)"/><span class="exp-sr">SR</span></div></div>
       <div class="exp-row"><div><div class="exp-name">Home Internet</div></div>
         <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_internet" placeholder="0" oninput="setBill('internet',this.value)"/><span class="exp-sr">SR</span></div></div>
-      <div class="exp-row"><div><div class="exp-name">Tabby</div><div class="exp-sub">Installment</div></div>
-        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tabby" placeholder="0" oninput="setBill('tabby',this.value)"/><span class="exp-sr">SR</span></div></div>
+      <div class="exp-row" id="tabbyRow">
+        <div>
+          <div class="exp-name">Tabby <span class="tabby-badge" id="tabbyBadge"></span></div>
+          <div class="exp-sub" id="tabbySub">Installment</div>
+        </div>
+        <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tabby" placeholder="0" oninput="setBill('tabby',this.value)"/><span class="exp-sr">SR</span></div>
+      </div>
       <div class="exp-row"><div><div class="exp-name">Tamara</div><div class="exp-sub">Installment</div></div>
         <div style="display:flex;align-items:center;"><input class="exp-input" type="number" id="b_tamara" placeholder="0" oninput="setBill('tamara',this.value)"/><span class="exp-sr">SR</span></div></div>
       <div class="exp-row"><div><div class="exp-name">Credit Card</div></div>
@@ -210,10 +245,10 @@ select.add-input{background:#f8fafc;}
     <div class="sum-grid" id="carStatGrid"></div>
     <div class="card">
       <div id="carProgressSection"></div>
-      <div id="carAlertBox" class="info-box" style="margin-bottom:0;"></div>
+      <div id="carAlertBox" style="border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;margin-bottom:0;"></div>
     </div>
-    <div class="card" style="border:2px solid #dbeafe;">
-      <div class="card-title" style="color:#2563eb;">This Month — Auto Saving</div>
+    <div class="card" id="carThisMonthCard" style="border:2px solid #dbeafe;">
+      <div class="card-title" id="carThisMonthTitle" style="color:#2563eb;">This Month — Auto Saving</div>
       <div id="carThisMonth"></div>
     </div>
     <div class="card">
@@ -237,10 +272,10 @@ select.add-input{background:#f8fafc;}
     <div class="sum-grid" id="schStatGrid"></div>
     <div class="card">
       <div id="schProgressSection"></div>
-      <div id="schAlertBox" class="info-box" style="margin-bottom:0;"></div>
+      <div id="schAlertBox" style="border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;margin-bottom:0;"></div>
     </div>
-    <div class="card" style="border:2px solid #bbf7d0;">
-      <div class="card-title" style="color:#16a34a;">This Month — Auto Saving</div>
+    <div class="card" id="schThisMonthCard" style="border:2px solid #bbf7d0;">
+      <div class="card-title" id="schThisMonthTitle" style="color:#16a34a;">This Month — Auto Saving</div>
       <div id="schThisMonth"></div>
     </div>
     <div class="card">
@@ -255,15 +290,15 @@ select.add-input{background:#f8fafc;}
     <div class="plan-hero bro-hero-bg">
       <div class="hero-title">🤝 Brother Debt Repayment</div>
       <div class="hero-amount" id="broHeroAmount">6,000 SR</div>
-      <div class="hero-sub" id="broHeroSub">Save Apr 2026 → Dec 2026 (9 months) · Due Dec 2026</div>
+      <div class="hero-sub" id="broHeroSub">Save Apr → Dec 2026 (9 months) · Due Dec 2026</div>
     </div>
     <div class="sum-grid" id="broStatGrid"></div>
     <div class="card">
       <div id="broProgressSection"></div>
-      <div id="broAlertBox" class="info-box" style="margin-bottom:0;"></div>
+      <div id="broAlertBox" style="border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;margin-bottom:0;"></div>
     </div>
-    <div class="card" style="border:2px solid #f3e8ff;">
-      <div class="card-title" style="color:#c026d3;">This Month — Auto Saving</div>
+    <div class="card" id="broThisMonthCard" style="border:2px solid #f3e8ff;">
+      <div class="card-title" id="broThisMonthTitle" style="color:#c026d3;">This Month — Auto Saving</div>
       <div id="broThisMonth"></div>
     </div>
     <div class="card">
@@ -275,543 +310,554 @@ select.add-input{background:#f8fafc;}
 </div>
 
 <script>
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // CONSTANTS
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 var MN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 var MS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var BILL_KEYS = ['family','car','mobile','rent','internet','tabby','tamara','credit','food'];
 
-// Car Plan
+// ── Car Plan ─────────────────────────────────────────────────────────
+// Apr 2026 (index 3) → Feb 2030 (index 1)
+// 47 months: Apr2026=0, May2026=1, ..., Feb2030=46
 var CAR_TOTAL   = 42525;
-var CAR_START_M = 3; // April (0-based)
+var CAR_START_M = 3;   // April (0-indexed)
 var CAR_START_Y = 2026;
-var CAR_END_M   = 1; // Feb
-var CAR_END_Y   = 2030;
 var CAR_N       = 47;
 
-// Brother Debt
+// ── Brother Debt ──────────────────────────────────────────────────────
+// Apr 2026 → Dec 2026 = 9 months. Dec IS a saving month.
 var BRO_TOTAL   = 6000;
-var BRO_START_M = 3; // April (0-based)
+var BRO_START_M = 3;   // April
 var BRO_START_Y = 2026;
-var BRO_END_M   = 11; // December
-var BRO_END_Y   = 2026;
-var BRO_N       = 9; // Apr–Dec = 9 months
+var BRO_N       = 9;   // Apr(0)...Dec(8)
 
-// School Payments
-var SCH_PAYMENTS = (function() {
-  var list = [];
-  var augAmt = 2000, febAmt = 1500;
-  var y = 2026;
-  while (true) {
-    list.push({ m: 7, y: y, amt: augAmt });
-    augAmt += 500;
-    var fy = y + 1;
-    list.push({ m: 1, y: fy, amt: febAmt });
-    febAmt += 500;
-    if (fy >= 2035) break;
+// ── School Payments ───────────────────────────────────────────────────
+// Payment 1: Aug 2026 (2000 SR), saving window Apr–Jul 2026 (4 months)
+// Payment 2: Feb 2027 (1500 SR), saving window Sep 2026–Jan 2027 (5 months)
+// Payment 3: Aug 2027 (2500 SR), saving window Mar–Jul 2027 (5 months)
+// ... and so on, amounts increase by 500 each time
+var SCH_PAYMENTS = (function(){
+  var list=[], augAmt=2000, febAmt=1500, y=2026;
+  while(true){
+    list.push({m:7, y:y, amt:augAmt}); augAmt+=500;
+    var fy=y+1;
+    list.push({m:1, y:fy, amt:febAmt}); febAmt+=500;
+    if(fy>=2035) break;
     y++;
   }
   return list;
 })();
 
-var SCH_WINDOWS = (function() {
-  var wins = [];
-  for (var i = 0; i < SCH_PAYMENTS.length; i++) {
-    var p = SCH_PAYMENTS[i];
-    var startM, startY;
-    if (i === 0) { startM = 3; startY = 2026; }
-    else {
-      var prev = SCH_PAYMENTS[i-1];
-      startM = prev.m + 1; startY = prev.y;
-      if (startM > 11) { startM = 0; startY++; }
+var SCH_WINDOWS = (function(){
+  var wins=[];
+  for(var i=0;i<SCH_PAYMENTS.length;i++){
+    var p=SCH_PAYMENTS[i], startM, startY;
+    if(i===0){ startM=3; startY=2026; }
+    else{
+      var prev=SCH_PAYMENTS[i-1];
+      startM=prev.m+1; startY=prev.y;
+      if(startM>11){startM=0;startY++;}
     }
-    var endM = p.m - 1; var endY = p.y;
-    if (endM < 0) { endM = 11; endY--; }
-    var nMonths = (endY - startY) * 12 + (endM - startM) + 1;
-    wins.push({ startM: startM, startY: startY, endM: endM, endY: endY, n: Math.max(1, nMonths) });
+    var endM=p.m-1, endY=p.y;
+    if(endM<0){endM=11;endY--;}
+    var n=Math.max(1,(endY-startY)*12+(endM-startM)+1);
+    wins.push({startM:startM,startY:startY,endM:endM,endY:endY,n:n});
   }
   return wins;
 })();
 
-function schPaymentFor(m, y) {
-  for (var i = 0; i < SCH_PAYMENTS.length; i++) {
-    var w = SCH_WINDOWS[i];
-    var cur = y * 12 + m, base = w.startY * 12 + w.startM, end = w.endY * 12 + w.endM;
-    if (cur >= base && cur <= end) return i;
-  }
-  return null;
-}
-function schMonthOffset(m, y, pi) {
-  var w = SCH_WINDOWS[pi];
-  return (y - w.startY) * 12 + (m - w.startM);
-}
-function schSaveKey(pi, offset) { return 'sch7_'+pi+'_'+offset; }
-function getSchSaveP(pi, offset) { return S.g(schSaveKey(pi, offset), 0); }
-function setSchSaveP(pi, offset, v) { S.s(schSaveKey(pi, offset), v); }
-function schTotalSavedFor(pi) {
-  var t = 0, w = SCH_WINDOWS[pi];
-  for (var o = 0; o < w.n; o++) t += getSchSaveP(pi, o);
-  return t;
-}
+// ═══════════════════════════════════════════════════════════════════════
+// STATE — vm/vy = currently viewed month/year
+// ═══════════════════════════════════════════════════════════════════════
+var vm=3, vy=2026;
+var activeTab='overview';
+var data={salary:0,bills:{},other:[],extraIncome:[]};
 
-// ═══════════════════════════════════════
-// BROTHER DEBT HELPERS
-// ═══════════════════════════════════════
-function broI(m, y) {
-  var i = (y - BRO_START_Y) * 12 + (m - BRO_START_M);
-  return (i >= 0 && i < BRO_N) ? i : null;
-}
-function broMonthOf(i) {
-  var t = BRO_START_M + i;
-  return { m: t % 12, y: BRO_START_Y + Math.floor(t / 12) };
-}
-function getBroSave(i)   { return S.g('bro1_'+i, 0); }
-function setBroSave(i,v) { S.s('bro1_'+i, v); }
-function totalBroSaved() {
-  var t = 0;
-  for (var i = 0; i < BRO_N; i++) t += getBroSave(i);
-  return t;
-}
+// ── Global computed snapshot (set once per render cycle) ───────────────
+// This is THE single source of truth. All tabs read from here.
+var G={};
 
-// ═══════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════
-var vm = 3, vy = 2026;
-var activeTab = 'overview';
-var data = { salary: 0, bills: {}, other: [], extraIncome: [] };
-
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // STORAGE
-// ═══════════════════════════════════════
-var S = (function(){
+// ═══════════════════════════════════════════════════════════════════════
+var S=(function(){
   var m={};
   try{
     localStorage.setItem('_x','1'); localStorage.removeItem('_x');
     return{
       g:function(k,d){var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;},
-      s:function(k,v){localStorage.setItem(k,JSON.stringify(v));}
+      s:function(k,v){localStorage.setItem(k,JSON.stringify(v));},
+      clear:function(){localStorage.clear();}
     };
-  } catch(e){
-    return{g:function(k,d){return m[k]!==undefined?m[k]:d;},s:function(k,v){m[k]=v;}};
+  }catch(e){
+    return{g:function(k,d){return m[k]!==undefined?m[k]:d;},s:function(k,v){m[k]=v;},clear:function(){m={};}};
   }
 })();
 
-function mk(s)  { return 'bp6_'+vy+'_'+vm+'_'+s; }
-function mkG(s) { return 'bp6_g_'+s; }
-function carSaveKey(i) { return 'car6_'+i; }
-function R(n)  { return Math.round(n); }
-function F(n)  { return Number(Math.abs(R(n))).toLocaleString(); }
-function today(){ var d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); }
+function mk(s){return 'bp7_'+vy+'_'+vm+'_'+s;}
+function mkG(s){return 'bp7_g_'+s;}
+function R(n){return Math.round(n);}
+function F(n){return Number(Math.abs(R(n))).toLocaleString();}
+function today(){var d=new Date();return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();}
 
-// ═══════════════════════════════════════
-// CAR PLAN HELPERS
-// ═══════════════════════════════════════
-function carI(m, y) {
-  var i = (y - CAR_START_Y) * 12 + (m - CAR_START_M);
-  return (i >= 0 && i < CAR_N) ? i : null;
-}
-function carMonthOf(i) {
-  var t = CAR_START_M + i;
-  return { m: t % 12, y: CAR_START_Y + Math.floor(t / 12) };
-}
-function getCarSave(i)   { return S.g(carSaveKey(i), 0); }
-function setCarSave(i,v) { S.s(carSaveKey(i), v); }
-function totalCarSaved() {
-  var t = 0;
-  for (var i = 0; i < CAR_N; i++) t += getCarSave(i);
-  return t;
-}
+// ── Plan storage helpers ───────────────────────────────────────────────
+function carIdx(m,y){var i=(y-CAR_START_Y)*12+(m-CAR_START_M);return(i>=0&&i<CAR_N)?i:null;}
+function carMonthOf(i){var t=CAR_START_M+i;return{m:t%12,y:CAR_START_Y+Math.floor(t/12)};}
+function getCarSave(i){return S.g('c7_'+i,0);}
+function setCarSave(i,v){S.s('c7_'+i,v);}
+function totalCarSaved(){var t=0;for(var i=0;i<CAR_N;i++)t+=getCarSave(i);return t;}
 
-// ═══════════════════════════════════════
-// CORE CALCULATION — 3-WAY URGENCY SPLIT
-// ═══════════════════════════════════════
-function calcAll(persist) {
-  var salary      = data.salary;
-  var extraIncome = data.extraIncome.reduce(function(s,e){ return s+e.amt; }, 0);
-  var totalIncome = salary + extraIncome;
-  var fixedExp    = BILL_KEYS.reduce(function(s,k){ return s+(parseFloat(data.bills[k])||0); }, 0);
-  var otherExp    = data.other.reduce(function(s,e){ return s+e.amt; }, 0);
-  var totalExp    = fixedExp + otherExp;
-  var remaining   = totalIncome - totalExp;
+function broIdx(m,y){var i=(y-BRO_START_Y)*12+(m-BRO_START_M);return(i>=0&&i<BRO_N)?i:null;}
+function broMonthOf(i){var t=BRO_START_M+i;return{m:t%12,y:BRO_START_Y+Math.floor(t/12)};}
+function getBroSave(i){return S.g('b7_'+i,0);}
+function setBroSave(i,v){S.s('b7_'+i,v);}
+function totalBroSaved(){var t=0;for(var i=0;i<BRO_N;i++)t+=getBroSave(i);return t;}
 
-  var ci = carI(vm, vy);
-  var pi = schPaymentFor(vm, vy);
-  var bi = broI(vm, vy);
-
-  // Read already-stored values for THIS month
-  var storedCarSave = ci !== null ? getCarSave(ci) : 0;
-  var storedSchSave = pi !== null ? getSchSaveP(pi, schMonthOffset(vm, vy, pi)) : 0;
-  var storedBroSave = bi !== null ? getBroSave(bi) : 0;
-
-  // Totals saved EXCLUDING this month
-  var carSavedExThis = totalCarSaved() - storedCarSave;
-  var schSavedExThis = pi !== null ? schTotalSavedFor(pi) - storedSchSave : 0;
-  var broSavedExThis = totalBroSaved() - storedBroSave;
-
-  // ── Car urgency ──────────────────────
-  var carStillNeeded = Math.max(0, CAR_TOTAL - carSavedExThis);
-  var carMonthsLeft  = ci !== null ? Math.max(1, CAR_N - ci) : 0;
-  var carMinNeeded   = carMonthsLeft > 0 ? carStillNeeded / carMonthsLeft : 0;
-  var carUrgency     = ci !== null ? carMinNeeded : 0;
-
-  // ── School urgency ───────────────────
-  var schStillNeeded = 0, schMonthsLeft = 0, schMinNeeded = 0, schUrgency = 0;
-  if (pi !== null) {
-    var w        = SCH_WINDOWS[pi];
-    var offset   = schMonthOffset(vm, vy, pi);
-    schStillNeeded = Math.max(0, SCH_PAYMENTS[pi].amt - schSavedExThis);
-    schMonthsLeft  = Math.max(1, w.n - offset);
-    schMinNeeded   = schStillNeeded / schMonthsLeft;
-    schUrgency     = schMinNeeded;
+function schPiFor(m,y){
+  for(var i=0;i<SCH_PAYMENTS.length;i++){
+    var w=SCH_WINDOWS[i],cur=y*12+m,base=w.startY*12+w.startM,end=w.endY*12+w.endM;
+    if(cur>=base&&cur<=end)return i;
   }
+  return null;
+}
+function schOffset(m,y,pi){var w=SCH_WINDOWS[pi];return(y-w.startY)*12+(m-w.startM);}
+function getSchSave(pi,off){return S.g('s7_'+pi+'_'+off,0);}
+function setSchSave(pi,off,v){S.s('s7_'+pi+'_'+off,v);}
+function schTotalFor(pi){var t=0,w=SCH_WINDOWS[pi];for(var o=0;o<w.n;o++)t+=getSchSave(pi,o);return t;}
 
-  // ── Brother urgency ──────────────────
-  var broStillNeeded = 0, broMonthsLeft = 0, broMinNeeded = 0, broUrgency = 0;
-  if (bi !== null) {
-    broStillNeeded = Math.max(0, BRO_TOTAL - broSavedExThis);
-    broMonthsLeft  = Math.max(1, BRO_N - bi);
-    broMinNeeded   = broStillNeeded / broMonthsLeft;
-    broUrgency     = broMinNeeded;
-  }
+// ═══════════════════════════════════════════════════════════════════════
+// SINGLE MASTER CALCULATION ENGINE
+// Called ONCE per render. Sets global G. persist=true writes to storage.
+// ═══════════════════════════════════════════════════════════════════════
+function computeAll(persist){
+  // ── Income & expenses ─────────────────────────────────────────────
+  var salary   = data.salary;
+  var extra    = data.extraIncome.reduce(function(s,e){return s+e.amt;},0);
+  var income   = salary+extra;
+  var fixedExp = BILL_KEYS.reduce(function(s,k){return s+(parseFloat(data.bills[k])||0);},0);
+  var otherExp = data.other.reduce(function(s,e){return s+e.amt;},0);
+  var totalExp = fixedExp+otherExp;
+  var remaining= income-totalExp;
 
-  // ── 3-way split by urgency ───────────
-  var carSave = 0, schSave = 0, broSave = 0;
-  if (remaining > 0) {
-    var totalUrgency = carUrgency + schUrgency + broUrgency;
-    if (totalUrgency > 0) {
-      carSave = remaining * (carUrgency / totalUrgency);
-      schSave = remaining * (schUrgency / totalUrgency);
-      broSave = remaining * (broUrgency / totalUrgency);
+  // ── Plan indices for current month ────────────────────────────────
+  var ci = carIdx(vm,vy);
+  var pi = schPiFor(vm,vy);
+  var bi = broIdx(vm,vy);
+
+  // ── Already-stored savings for THIS month slot ────────────────────
+  var storedCar = ci!==null ? getCarSave(ci) : 0;
+  var storedSch = pi!==null ? getSchSave(pi,schOffset(vm,vy,pi)) : 0;
+  var storedBro = bi!==null ? getBroSave(bi) : 0;
+
+  // ── Cumulative totals EXCLUDING this month (to avoid double-count) ─
+  var carSavedPrev = totalCarSaved() - storedCar;
+  var schSavedPrev = pi!==null ? schTotalFor(pi) - storedSch : 0;
+  var broSavedPrev = totalBroSaved() - storedBro;
+
+  // ── Still needed per plan (excluding what's already committed) ─────
+  var carStill = Math.max(0, CAR_TOTAL - carSavedPrev);
+  var schStill = pi!==null ? Math.max(0, SCH_PAYMENTS[pi].amt - schSavedPrev) : 0;
+  var broStill = Math.max(0, BRO_TOTAL - broSavedPrev);
+
+  // ── Months left in each plan window ───────────────────────────────
+  var carMLeft = ci!==null ? Math.max(1, CAR_N - ci) : 0;
+  var schMLeft = pi!==null ? Math.max(1, SCH_WINDOWS[pi].n - schOffset(vm,vy,pi)) : 0;
+  var broMLeft = bi!==null ? Math.max(1, BRO_N - bi) : 0;
+
+  // ── Minimum needed PER MONTH (urgency = monthly pressure) ─────────
+  var carMin = ci!==null && carMLeft>0 ? carStill/carMLeft : 0;
+  var schMin = pi!==null && schMLeft>0 ? schStill/schMLeft : 0;
+  var broMin = bi!==null && broMLeft>0 ? broStill/broMLeft : 0;
+
+  // ── 3-way proportional urgency split ──────────────────────────────
+  // Plans outside their active window get 0 and their share redistributes
+  var carSave=0, schSave=0, broSave=0;
+  if(remaining>0){
+    var totalUrg = (ci!==null?carMin:0) + (pi!==null?schMin:0) + (bi!==null?broMin:0);
+    if(totalUrg>0){
+      carSave = ci!==null ? remaining*(carMin/totalUrg) : 0;
+      schSave = pi!==null ? remaining*(schMin/totalUrg) : 0;
+      broSave = bi!==null ? remaining*(broMin/totalUrg) : 0;
+    } else {
+      // All urgencies are 0 (all plans fully funded or inactive)
+      // distribute evenly among active plans
+      var active=[ci!==null,pi!==null,bi!==null].filter(Boolean).length;
+      if(active>0){
+        var share=remaining/active;
+        if(ci!==null)carSave=share;
+        if(pi!==null)schSave=share;
+        if(bi!==null)broSave=share;
+      }
     }
-    // Handle inactive plans
-    if (ci === null) { var extra = carSave; carSave = 0; schSave += extra * (schUrgency/(schUrgency+broUrgency||1)); broSave += extra * (broUrgency/(schUrgency+broUrgency||1)); }
-    if (pi === null) { var extra2 = schSave; schSave = 0; carSave += extra2 * (carUrgency/(carUrgency+broUrgency||1)); broSave += extra2 * (broUrgency/(carUrgency+broUrgency||1)); }
-    if (bi === null) { var extra3 = broSave; broSave = 0; carSave += extra3 * (carUrgency/(carUrgency+schUrgency||1)); schSave += extra3 * (schUrgency/(carUrgency+schUrgency||1)); }
   }
 
-  // ── Persist or display ───────────────
-  if (persist) {
-    if (ci !== null) setCarSave(ci, Math.max(0, carSave));
-    if (pi !== null) setSchSaveP(pi, schMonthOffset(vm, vy, pi), Math.max(0, schSave));
-    if (bi !== null) setBroSave(bi, Math.max(0, broSave));
+  // ── Persist or read-back ───────────────────────────────────────────
+  // persist=true: write new values (called when user changes data)
+  // persist=false: if a stored value exists, use it; else use computed
+  if(persist){
+    if(ci!==null) setCarSave(ci, Math.max(0,carSave));
+    if(pi!==null) setSchSave(pi, schOffset(vm,vy,pi), Math.max(0,schSave));
+    if(bi!==null) setBroSave(bi, Math.max(0,broSave));
   } else {
-    if (ci !== null && storedCarSave > 0) carSave = storedCarSave;
-    if (pi !== null && storedSchSave > 0) schSave = storedSchSave;
-    if (bi !== null && storedBroSave > 0) broSave = storedBroSave;
+    // Use stored values if they were previously committed
+    if(ci!==null && storedCar>0) carSave=storedCar;
+    if(pi!==null && storedSch>0) schSave=storedSch;
+    if(bi!==null && storedBro>0) broSave=storedBro;
   }
 
-  return {
-    salary: salary, extraIncome: extraIncome, totalIncome: totalIncome,
-    fixedExp: fixedExp, otherExp: otherExp, totalExp: totalExp, remaining: remaining,
-    ci: ci, pi: pi, bi: bi,
-    carSave: carSave, schSave: schSave, broSave: broSave,
-    carMinNeeded: carMinNeeded, schMinNeeded: schMinNeeded, broMinNeeded: broMinNeeded,
-    carMonthsLeft: carMonthsLeft, schMonthsLeft: schMonthsLeft, broMonthsLeft: broMonthsLeft,
-    carStillNeeded: carStillNeeded, schStillNeeded: schStillNeeded, broStillNeeded: broStillNeeded
+  // ── Build global snapshot G (everything all tabs need) ────────────
+  G = {
+    // Income
+    salary:salary, extra:extra, income:income,
+    fixedExp:fixedExp, otherExp:otherExp, totalExp:totalExp, remaining:remaining,
+    // Plan indices
+    ci:ci, pi:pi, bi:bi,
+    // This month's auto-save amounts (THE SINGLE SOURCE)
+    carSave:carSave, schSave:schSave, broSave:broSave,
+    // Minimums needed
+    carMin:carMin, schMin:schMin, broMin:broMin,
+    // Months left
+    carMLeft:carMLeft, schMLeft:schMLeft, broMLeft:broMLeft,
+    // Still needed
+    carStill:carStill, schStill:schStill, broStill:broStill,
+    // Grand totals
+    carSavedTotal: totalCarSaved(),
+    broSavedTotal: totalBroSaved(),
+    // Per-payment school totals computed fresh
+    schSavedActive: pi!==null ? schTotalFor(pi) : 0,
+    schActiveAmt:   pi!==null ? SCH_PAYMENTS[pi].amt : 0,
   };
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // DATA LOAD / SAVE
-// ═══════════════════════════════════════
-function loadMonth() {
-  data.salary      = S.g(mkG('salary'), 0);
-  data.bills       = S.g(mk('bills'), {});
-  data.other       = S.g(mk('other'), []);
-  data.extraIncome = S.g(mk('extraIncome'), []);
+// ═══════════════════════════════════════════════════════════════════════
+function loadMonth(){
+  data.salary      = S.g(mkG('salary'),0);
+  data.bills       = S.g(mk('bills'),{});
+  data.other       = S.g(mk('other'),[]);
+  data.extraIncome = S.g(mk('extraIncome'),[]);
 }
-function saveMonth() {
-  S.s(mk('bills'), data.bills);
-  S.s(mk('other'), data.other);
-  S.s(mk('extraIncome'), data.extraIncome);
+function saveMonth(){
+  S.s(mk('bills'),data.bills);
+  S.s(mk('other'),data.other);
+  S.s(mk('extraIncome'),data.extraIncome);
 }
-function saveAndRender() {
+function saveAndRender(){
   saveMonth();
-  calcAll(true);
-  render();
+  computeAll(true);   // persist new split
+  renderAll();
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // NAVIGATION
-// ═══════════════════════════════════════
-function switchTab(t) {
-  activeTab = t;
-  var tabs = ['overview','income','expenses','car','school','brother'];
-  tabs.forEach(function(n) {
-    var el = document.getElementById('tab-'+n);
-    if (el) el.style.display = (n === t) ? 'block' : 'none';
+// ═══════════════════════════════════════════════════════════════════════
+function switchTab(t){
+  activeTab=t;
+  ['overview','income','expenses','car','school','brother'].forEach(function(n,i){
+    document.getElementById('tab-'+n).style.display=(n===t)?'block':'none';
+    document.querySelectorAll('.tab-btn')[i].className='tab-btn'+(n===t?' active':'');
   });
-  document.querySelectorAll('.tab-btn').forEach(function(b, i) {
-    b.className = 'tab-btn' + (tabs[i] === t ? ' active' : '');
-  });
-  render();
+  renderAll();
 }
-function changeMonth(d) {
-  vm += d;
-  if (vm > 11) { vm = 0; vy++; }
-  if (vm < 0)  { vm = 11; vy--; }
+function changeMonth(d){
+  vm+=d; if(vm>11){vm=0;vy++;} if(vm<0){vm=11;vy--;}
+  loadMonth(); renderAll();
+}
+function setSalary(v){
+  data.salary=parseFloat(v)||0;
+  S.s(mkG('salary'),data.salary);
+  saveAndRender();
+}
+function setBill(k,v){
+  data.bills[k]=parseFloat(v)||0;
+  saveAndRender();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CLEAR ALL DATA
+// ═══════════════════════════════════════════════════════════════════════
+function openClearModal(){document.getElementById('clearModal').classList.add('show');}
+function closeClearModal(){document.getElementById('clearModal').classList.remove('show');}
+function confirmClearAll(){
+  S.clear();
+  data={salary:0,bills:{},other:[],extraIncome:[]};
+  closeClearModal();
+  switchTab('income');
   loadMonth();
-  render();
-}
-function setSalary(v) {
-  data.salary = parseFloat(v) || 0;
-  S.s(mkG('salary'), data.salary);
-  saveAndRender();
-}
-function setBill(k, v) {
-  data.bills[k] = parseFloat(v) || 0;
-  saveAndRender();
+  renderAll();
 }
 
-// ═══════════════════════════════════════
-// MASTER RENDER
-// ═══════════════════════════════════════
-function render() {
-  var sn = calcAll(false);
-
-  document.getElementById('monthTitle').textContent = MN[vm] + ' ' + vy;
-  var ci2 = carI(vm, vy), pi2 = schPaymentFor(vm, vy), bi2 = broI(vm, vy);
-  var metaParts = [];
-  if (ci2 !== null) metaParts.push('Car month '+(ci2+1)+'/47');
-  if (pi2 !== null) {
-    var w2 = SCH_WINDOWS[pi2];
-    metaParts.push('School P'+(pi2+1)+' saving '+(schMonthOffset(vm,vy,pi2)+1)+'/'+w2.n);
-  }
-  if (bi2 !== null) metaParts.push('Bro debt month '+(bi2+1)+'/9');
-  document.getElementById('monthMeta').textContent = metaParts.join(' · ');
-  document.getElementById('monthBadge').textContent = MS[vm]+' '+vy;
-
-  var ab = document.getElementById('alertBox');
-  if (!sn.salary) {
-    ab.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#d97706;display:flex;gap:10px;line-height:1.5;';
-    ab.innerHTML = '<span>!</span> Enter your salary in the <strong>Income</strong> tab first.';
-    ab.style.display = 'flex';
-  } else if (sn.remaining < 0) {
-    ab.style.cssText = 'background:#fef2f2;border:2px solid #fecaca;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#dc2626;display:flex;gap:10px;line-height:1.5;';
-    ab.innerHTML = '<span>⚠</span> Expenses exceed salary by <strong>'+F(Math.abs(sn.remaining))+' SR</strong> — nothing left for saving plans.';
-    ab.style.display = 'flex';
-  } else if (sn.remaining === 0) {
-    ab.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#d97706;display:flex;gap:10px;line-height:1.5;';
-    ab.innerHTML = '<span>!</span> Nothing left after expenses — plans get 0 this month.';
-    ab.style.display = 'flex';
+// ═══════════════════════════════════════════════════════════════════════
+// TABBY BADGE — dynamic countdown
+// ═══════════════════════════════════════════════════════════════════════
+function updateTabbyBadge(){
+  // Tabby ends June 2026 (month index 5, year 2026)
+  var tabbyEndM=5, tabbyEndY=2026;
+  var nowAbsolute=vy*12+vm, endAbsolute=tabbyEndY*12+tabbyEndM;
+  var badge=document.getElementById('tabbyBadge');
+  var sub=document.getElementById('tabbySub');
+  var diff=endAbsolute-nowAbsolute;
+  if(diff<0){
+    badge.textContent='Ended';
+    badge.style.background='#f1f5f9';badge.style.color='#94a3b8';badge.style.borderColor='#e2e8f0';
+    sub.textContent='Installment — completed';
+  } else if(diff===0){
+    badge.textContent='Last month!';
+    badge.style.background='#dcfce7';badge.style.color='#16a34a';badge.style.borderColor='#86efac';
+    sub.textContent='Final installment this month';
+  } else if(diff<=2){
+    badge.textContent='Ends in '+diff+' month'+(diff===1?'':'s')+' (Jun 2026)';
+    badge.style.background='#fff3cd';badge.style.color='#856404';badge.style.borderColor='#ffc107';
+    sub.textContent='Installment — finishing soon!';
   } else {
-    ab.style.cssText = 'background:#f0fdf4;border:2px solid #bbf7d0;border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;color:#16a34a;display:flex;gap:10px;line-height:1.5;';
-    ab.innerHTML = '<span>✓</span> <strong>'+F(sn.remaining)+' SR</strong> remaining → 🚗 <strong>'+F(sn.carSave)+'</strong> · 🏫 <strong>'+F(sn.schSave)+'</strong> · 🤝 <strong>'+F(sn.broSave)+' SR</strong>';
-    ab.style.display = 'flex';
+    badge.textContent='Ends Jun 2026';
+    badge.style.background='#f0f4f8';badge.style.color='#64748b';badge.style.borderColor='#cbd5e1';
+    sub.textContent='Installment';
   }
-
-  if (activeTab === 'overview')  renderOverview(sn);
-  if (activeTab === 'income')    renderIncome(sn);
-  if (activeTab === 'expenses')  renderExpenses(sn);
-  if (activeTab === 'car')       renderCar(sn);
-  if (activeTab === 'school')    renderSchool(sn);
-  if (activeTab === 'brother')   renderBrother(sn);
 }
 
-// ═══════════════════════════════════════
-// OVERVIEW
-// ═══════════════════════════════════════
-function renderOverview(sn) {
-  var carSaved = totalCarSaved();
-  var broSaved = totalBroSaved();
-  var broRem   = Math.max(0, BRO_TOTAL - broSaved);
-  var broPct   = Math.min(100, Math.round(broSaved / BRO_TOTAL * 100));
-  var totalSchNeeded = SCH_PAYMENTS.reduce(function(s,p){ return s+p.amt; }, 0);
-  var totalSchSaved  = 0;
-  for (var i = 0; i < SCH_PAYMENTS.length; i++) totalSchSaved += schTotalSavedFor(i);
-  var schOverallPct  = totalSchNeeded > 0 ? Math.min(100, Math.round(totalSchSaved / totalSchNeeded * 100)) : 0;
-  var remCol = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
-  var carPct = Math.min(100, Math.round(carSaved / CAR_TOTAL * 100));
-  var carDone = 0; for (var i = 0; i < CAR_N; i++) if (getCarSave(i) > 0) carDone++;
-  var broDone = 0; for (var i = 0; i < BRO_N; i++) if (getBroSave(i) > 0) broDone++;
+// ═══════════════════════════════════════════════════════════════════════
+// MASTER RENDER — calls computeAll(false) then routes to active tab
+// ═══════════════════════════════════════════════════════════════════════
+function renderAll(){
+  computeAll(false);  // populate G, read-only
 
-  document.getElementById('ovSumGrid').innerHTML = [
-    { lbl:'Salary',         val:sn.salary,       col:'#16a34a', sub:'Monthly income' },
-    { lbl:'Extra Income',   val:sn.extraIncome,  col:'#10b981', sub:'One-time entries' },
-    { lbl:'Total Expenses', val:sn.totalExp,     col:'#dc2626', sub:'Bills + Food + Other' },
-    { lbl:'Remaining',      val:sn.remaining,    col:remCol,    sub:'Split to 3 plans' },
-    { lbl:'→ Car Save',     val:sn.carSave,      col:'#2563eb', sub:'This month (auto)' },
-    { lbl:'→ School Save',  val:sn.schSave,      col:'#16a34a', sub:'This month (auto)' },
-    { lbl:'→ Bro Debt',     val:sn.broSave,      col:'#c026d3', sub:'This month (auto)' },
-  ].map(function(b) {
+  // Header
+  document.getElementById('monthTitle').textContent=MN[vm]+' '+vy;
+  document.getElementById('monthBadge').textContent=MS[vm]+' '+vy;
+  var meta=[];
+  if(G.ci!==null)meta.push('Car '+(G.ci+1)+'/47');
+  if(G.pi!==null)meta.push('School P'+(G.pi+1)+' ('+(schOffset(vm,vy,G.pi)+1)+'/'+SCH_WINDOWS[G.pi].n+')');
+  if(G.bi!==null)meta.push('Bro '+(G.bi+1)+'/9');
+  document.getElementById('monthMeta').textContent=meta.join(' · ');
+
+  updateTabbyBadge();
+
+  // Global alert bar
+  var ab=document.getElementById('alertBox');
+  if(!G.salary){
+    setAlert(ab,'warn','! Enter your salary in the <strong>Income</strong> tab first.');
+  } else if(G.remaining<0){
+    setAlert(ab,'err','⚠ Expenses exceed salary by <strong>'+F(Math.abs(G.remaining))+' SR</strong> — no savings this month.');
+  } else if(G.remaining===0){
+    setAlert(ab,'warn','! Nothing left after expenses — plans get 0 SR this month.');
+  } else {
+    setAlert(ab,'ok','✓ <strong>'+F(G.remaining)+' SR</strong> remaining → 🚗 <strong>'+F(G.carSave)+'</strong> · 🏫 <strong>'+F(G.schSave)+'</strong> · 🤝 <strong>'+F(G.broSave)+' SR</strong>');
+  }
+
+  // Render active tab
+  if(activeTab==='overview') renderOverview();
+  if(activeTab==='income')   renderIncome();
+  if(activeTab==='expenses') renderExpenses();
+  if(activeTab==='car')      renderCar();
+  if(activeTab==='school')   renderSchool();
+  if(activeTab==='brother')  renderBrother();
+}
+
+function setAlert(el,type,html){
+  var styles={
+    ok: 'background:#f0fdf4;border:2px solid #bbf7d0;color:#16a34a;',
+    warn:'background:#fffbeb;border:2px solid #fde68a;color:#d97706;',
+    err: 'background:#fef2f2;border:2px solid #fecaca;color:#dc2626;'
+  };
+  el.style.cssText=styles[type]+'border-radius:16px;padding:15px 18px;margin-bottom:16px;font-size:14px;font-weight:700;line-height:1.6;display:flex;gap:10px;';
+  el.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// OVERVIEW TAB
+// ═══════════════════════════════════════════════════════════════════════
+function renderOverview(){
+  var carSaved=G.carSavedTotal, broSaved=G.broSavedTotal;
+  var carPct=Math.min(100,Math.round(carSaved/CAR_TOTAL*100));
+  var broPct=Math.min(100,Math.round(broSaved/BRO_TOTAL*100));
+  var carDone=0; for(var i=0;i<CAR_N;i++)if(getCarSave(i)>0)carDone++;
+  var broDone=0; for(var i=0;i<BRO_N;i++)if(getBroSave(i)>0)broDone++;
+  var totalSchNeeded=SCH_PAYMENTS.reduce(function(s,p){return s+p.amt;},0);
+  var totalSchSaved=0; for(var i=0;i<SCH_PAYMENTS.length;i++)totalSchSaved+=schTotalFor(i);
+  var schPct=totalSchNeeded>0?Math.min(100,Math.round(totalSchSaved/totalSchNeeded*100)):0;
+  var remCol=G.remaining>=0?'#16a34a':'#dc2626';
+
+  document.getElementById('ovSumGrid').innerHTML=[
+    {lbl:'Salary',        val:G.salary,    col:'#16a34a',sub:'Monthly income'},
+    {lbl:'Extra Income',  val:G.extra,     col:'#10b981',sub:'One-time entries'},
+    {lbl:'Total Expenses',val:G.totalExp,  col:'#dc2626',sub:'Bills + Food + Other'},
+    {lbl:'Remaining',     val:G.remaining, col:remCol,   sub:'Split to 3 plans'},
+    {lbl:'→ Car Save',    val:G.carSave,   col:'#2563eb',sub:'This month (auto)'},
+    {lbl:'→ School Save', val:G.schSave,   col:'#16a34a',sub:'This month (auto)'},
+    {lbl:'→ Bro Debt',    val:G.broSave,   col:'#c026d3',sub:'This month (auto)'},
+  ].map(function(b){
     return '<div class="sum-box" style="border-top-color:'+b.col+';">'
-      + '<div class="sum-label">'+b.lbl+'</div>'
-      + '<div class="sum-val" style="color:'+b.col+';">'+(b.val<0?'−':'')+F(b.val)+' SR</div>'
-      + '<div class="sum-sub">'+b.sub+'</div></div>';
+      +'<div class="sum-label">'+b.lbl+'</div>'
+      +'<div class="sum-val" style="color:'+b.col+';">'+(b.val<0?'−':'')+F(b.val)+' SR</div>'
+      +'<div class="sum-sub">'+b.sub+'</div></div>';
   }).join('');
 
-  var pc = '';
-  pc += '<div class="pbar-wrap"><div class="pbar-label"><span>🚗 Car Plan</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+carPct+'%</span></div>'
-    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+carPct+'%;background:#2563eb;"></div></div>'
-    + '<div class="pbar-sub">'+F(carSaved)+' / '+F(CAR_TOTAL)+' SR · '+carDone+' of 47 months done</div></div>';
-  pc += '<div class="pbar-wrap"><div class="pbar-label"><span>🏫 School — Overall</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+schOverallPct+'%</span></div>'
-    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+schOverallPct+'%;background:#16a34a;"></div></div>'
-    + '<div class="pbar-sub">'+F(totalSchSaved)+' / '+F(totalSchNeeded)+' SR total · Last payment Feb 2035</div></div>';
-  pc += '<div class="pbar-wrap" style="margin-bottom:0;"><div class="pbar-label"><span>🤝 Brother Debt</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#c026d3;">'+broPct+'%</span></div>'
-    + '<div class="pbar-track"><div class="pbar-fill" style="width:'+broPct+'%;background:#c026d3;"></div></div>'
-    + '<div class="pbar-sub">'+F(broSaved)+' / '+F(BRO_TOTAL)+' SR · '+broDone+' of 9 months done · Due Dec 2026</div></div>';
-  document.getElementById('ovProgressCard').innerHTML = pc;
+  document.getElementById('ovProgressCard').innerHTML=
+    pbar('🚗 Car Plan',carPct,'#2563eb',F(carSaved)+' / '+F(CAR_TOTAL)+' SR · '+carDone+' of 47 months done')+
+    pbar('🏫 School — Overall',schPct,'#16a34a',F(totalSchSaved)+' / '+F(totalSchNeeded)+' SR · Last payment Feb 2035')+
+    pbar2('🤝 Brother Debt',broPct,'#c026d3',F(broSaved)+' / '+F(BRO_TOTAL)+' SR · '+broDone+' of 9 months done · Due Dec 2026');
 
-  var remCol2 = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
-  document.getElementById('ovBreakdown').innerHTML = [
-    { lbl:'My Salary',          val:sn.salary,       col:'#16a34a', pre:'+' },
-    { lbl:'Extra Income',       val:sn.extraIncome,  col:'#10b981', pre:'+' },
-    { lbl:'Fixed Expenses',     val:sn.fixedExp,     col:'#f97316', pre:'−' },
-    { lbl:'Other Spending',     val:sn.otherExp,     col:'#dc2626', pre:'−' },
-    { lbl:'Remaining',          val:sn.remaining,    col:remCol2,   pre:'=' },
-    { lbl:'  ↳ 🚗 Car Plan',   val:sn.carSave,      col:'#2563eb', pre:'' },
-    { lbl:'  ↳ 🏫 School',     val:sn.schSave,      col:'#16a34a', pre:'' },
-    { lbl:'  ↳ 🤝 Bro Debt',   val:sn.broSave,      col:'#c026d3', pre:'' },
-  ].map(function(r) {
+  document.getElementById('ovBreakdown').innerHTML=[
+    {lbl:'My Salary',       val:G.salary,    col:'#16a34a',pre:'+'},
+    {lbl:'Extra Income',    val:G.extra,     col:'#10b981',pre:'+'},
+    {lbl:'Fixed Expenses',  val:G.fixedExp,  col:'#f97316',pre:'−'},
+    {lbl:'Other Spending',  val:G.otherExp,  col:'#dc2626',pre:'−'},
+    {lbl:'Remaining',       val:G.remaining, col:remCol,   pre:'='},
+    {lbl:'  ↳ 🚗 Car Plan', val:G.carSave,   col:'#2563eb',pre:''},
+    {lbl:'  ↳ 🏫 School',   val:G.schSave,   col:'#16a34a',pre:''},
+    {lbl:'  ↳ 🤝 Bro Debt', val:G.broSave,   col:'#c026d3',pre:''},
+  ].map(function(r){
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:2px solid #f1f5f9;">'
-      + '<span style="font-size:15px;font-weight:700;color:#475569;">'+r.lbl+'</span>'
-      + '<span style="font-size:17px;font-weight:900;font-family:\'Courier New\',monospace;color:'+r.col+';">'
-      + (r.pre?r.pre+' ':'')+F(Math.abs(r.val))+' SR</span></div>';
+      +'<span style="font-size:15px;font-weight:700;color:#475569;">'+r.lbl+'</span>'
+      +'<span style="font-size:17px;font-weight:900;font-family:\'Courier New\',monospace;color:'+r.col+';">'
+      +(r.pre?r.pre+' ':'')+F(Math.abs(r.val))+' SR</span></div>';
   }).join('');
 }
 
-// ═══════════════════════════════════════
+function pbar(label,pct,col,sub){
+  return '<div class="pbar-wrap"><div class="pbar-label"><span>'+label+'</span>'
+    +'<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+pct+'%</span></div>'
+    +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+col+';"></div></div>'
+    +'<div class="pbar-sub">'+sub+'</div></div>';
+}
+function pbar2(label,pct,col,sub){ // no bottom margin
+  return '<div class="pbar-wrap" style="margin-bottom:0;"><div class="pbar-label"><span>'+label+'</span>'
+    +'<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+pct+'%</span></div>'
+    +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+col+';"></div></div>'
+    +'<div class="pbar-sub">'+sub+'</div></div>';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // INCOME TAB
-// ═══════════════════════════════════════
-function renderIncome(sn) {
-  document.getElementById('salaryInput').value = data.salary || '';
-  var exTotal = sn.extraIncome;
-  document.getElementById('exIncTotalLbl').textContent = F(exTotal)+' SR';
-  var exList = document.getElementById('exIncList');
-  if (!data.extraIncome.length) {
-    exList.innerHTML = '<div class="empty">No extra income this month</div>';
-  } else {
-    exList.innerHTML = '<div class="item-list">'+data.extraIncome.map(function(e){
+// ═══════════════════════════════════════════════════════════════════════
+function renderIncome(){
+  document.getElementById('salaryInput').value=data.salary||'';
+  document.getElementById('exIncTotalLbl').textContent=F(G.extra)+' SR';
+  var exList=document.getElementById('exIncList');
+  exList.innerHTML=!data.extraIncome.length?'<div class="empty">No extra income this month</div>'
+    :'<div class="item-list">'+data.extraIncome.map(function(e){
       return '<div class="item-row"><div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+e.desc+'</div>'
         +'<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-top:2px;">'+e.date+'</div></div>'
         +'<div style="display:flex;align-items:center;"><span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">+'+F(e.amt)+' SR</span>'
         +'<button class="del-btn" onclick="delExtraIncome('+e.id+')">×</button></div></div>';
     }).join('')+'</div>';
-  }
-  var el = document.getElementById('incomePanel');
-  if (!sn.salary && !exTotal) {
-    el.innerHTML = '<div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div>';
-    return;
-  }
-  var remCol = sn.remaining >= 0 ? '#16a34a' : '#dc2626';
-  var remBg  = sn.remaining >= 0 ? '#f0fdf4' : '#fef2f2';
-  var remBc  = sn.remaining >= 0 ? '#bbf7d0' : '#fecaca';
-  el.innerHTML =
-    row('💰 Salary','Your monthly salary',sn.salary,'#16a34a')+
-    (exTotal>0?row('➕ Extra Income',data.extraIncome.length+' entries this month',exTotal,'#10b981'):'')+
-    (exTotal>0?row('📥 Total Income','Salary + extra',sn.totalIncome,'#16a34a'):'')+
-    row('📋 Total Expenses','Bills + Food + Other spending',sn.totalExp,'#dc2626')+
+
+  var el=document.getElementById('incomePanel');
+  if(!G.salary&&!G.extra){el.innerHTML='<div class="empty" style="color:#c4b5fd;">Enter salary above to see breakdown.</div>';return;}
+  var remCol=G.remaining>=0?'#16a34a':'#dc2626';
+  var remBg=G.remaining>=0?'#f0fdf4':'#fef2f2', remBc=G.remaining>=0?'#bbf7d0':'#fecaca';
+  el.innerHTML=
+    irow('💰 Salary','Your monthly salary',G.salary,'#16a34a')+
+    (G.extra>0?irow('➕ Extra Income',data.extraIncome.length+' entries this month',G.extra,'#10b981'):'')+
+    (G.extra>0?irow('📥 Total Income','Salary + extra',G.income,'#16a34a'):'')+
+    irow('📋 Total Expenses','Bills + Food + Other spending',G.totalExp,'#dc2626')+
     '<div style="margin:14px 0;background:'+remBg+';border:2px solid '+remBc+';border-radius:13px;padding:15px 17px;">'
       +'<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:'+remCol+';margin-bottom:5px;">Remaining After Expenses</div>'
-      +'<div style="font-size:34px;font-weight:900;font-family:\'Courier New\',monospace;color:'+remCol+';">'+(sn.remaining<0?'−':'')+F(sn.remaining)+' SR</div>'
+      +'<div style="font-size:34px;font-weight:900;font-family:\'Courier New\',monospace;color:'+remCol+';">'+(G.remaining<0?'−':'')+F(G.remaining)+' SR</div>'
       +'<div style="font-size:12px;font-weight:700;color:'+remCol+';margin-top:5px;">'
-        +(sn.remaining>0?'Auto-split between 🚗 Car · 🏫 School · 🤝 Bro Debt by deadline urgency'
-        :sn.remaining===0?'Nothing left — plans get 0 this month'
-        :'Expenses exceed total income — review spending')
+        +(G.remaining>0?'Auto-split between 🚗 Car · 🏫 School · 🤝 Bro Debt by deadline urgency'
+        :G.remaining===0?'Nothing left — plans get 0 this month'
+        :'Expenses exceed income — review spending')
       +'</div></div>'
-    +(sn.remaining>0?splitBox(sn):'');
+    +(G.remaining>0?splitBoxHTML():'');
 }
-
-function row(label, sub, val, col) {
+function irow(lbl,sub,val,col){
   return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:2px solid #f3e8ff;">'
-    +'<div><div style="font-size:15px;font-weight:700;color:#1a2332;">'+label+'</div>'
+    +'<div><div style="font-size:15px;font-weight:700;color:#1a2332;">'+lbl+'</div>'
     +'<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-top:2px;">'+sub+'</div></div>'
     +'<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(val)+' SR</span></div>';
 }
-function splitBox(sn) {
+function splitBoxHTML(){
   return '<div style="background:#eff6ff;border-radius:12px;padding:13px 15px;">'
     +'<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#2563eb;margin-bottom:9px;">Auto Split by Urgency</div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #dbeafe;">'
-      +'<div><div style="font-size:15px;font-weight:700;color:#1a2332;">🚗 Car Plan</div>'
-      +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">Min needed: '+F(sn.carMinNeeded)+' SR · '+sn.carMonthsLeft+' months left</div></div>'
-      +'<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+F(sn.carSave)+' SR</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #dbeafe;">'
-      +'<div><div style="font-size:15px;font-weight:700;color:#1a2332;">🏫 School Fees</div>'
-      +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">Min needed: '+F(sn.schMinNeeded)+' SR · '+sn.schMonthsLeft+' months left</div></div>'
-      +'<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(sn.schSave)+' SR</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;">'
-      +'<div><div style="font-size:15px;font-weight:700;color:#1a2332;">🤝 Brother Debt</div>'
-      +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">Min needed: '+F(sn.broMinNeeded)+' SR · '+sn.broMonthsLeft+' months left</div></div>'
-      +'<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#c026d3;">'+F(sn.broSave)+' SR</span></div>'
-    +'<div style="font-size:11px;font-weight:600;color:#64748b;margin-top:8px;">Split based on deadline urgency across all 3 plans.</div></div>';
+    +splitLine('🚗 Car Plan','Min/month: '+F(G.carMin)+' SR · '+G.carMLeft+' months left',G.carSave,'#2563eb',true)
+    +splitLine('🏫 School Fees','Min/month: '+F(G.schMin)+' SR · '+G.schMLeft+' months left',G.schSave,'#16a34a',true)
+    +splitLine('🤝 Brother Debt','Min/month: '+F(G.broMin)+' SR · '+G.broMLeft+' months left',G.broSave,'#c026d3',false)
+    +'<div style="font-size:11px;font-weight:600;color:#64748b;margin-top:8px;">Split proportionally by deadline urgency across all 3 plans.</div></div>';
+}
+function splitLine(lbl,sub,val,col,border){
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;'+(border?'border-bottom:1px solid #dbeafe;':'')+'">'
+    +'<div><div style="font-size:15px;font-weight:700;color:#1a2332;">'+lbl+'</div>'
+    +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">'+sub+'</div></div>'
+    +'<span style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(val)+' SR</span></div>';
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // EXPENSES TAB
-// ═══════════════════════════════════════
-function renderExpenses(sn) {
-  var pct  = sn.totalIncome>0?Math.min(100,Math.round(sn.totalExp/sn.totalIncome*100)):0;
-  var bCol = pct<70?'#16a34a':pct<90?'#d97706':'#dc2626';
-  var bBg  = pct<70?'#f0fdf4':pct<90?'#fffbeb':'#fef2f2';
-  var bBc  = pct<70?'#bbf7d0':pct<90?'#fde68a':'#fecaca';
-  var sc   = document.getElementById('expStatusCard');
+// ═══════════════════════════════════════════════════════════════════════
+function renderExpenses(){
+  var pct=G.income>0?Math.min(100,Math.round(G.totalExp/G.income*100)):0;
+  var bCol=pct<70?'#16a34a':pct<90?'#d97706':'#dc2626';
+  var bBg=pct<70?'#f0fdf4':pct<90?'#fffbeb':'#fef2f2';
+  var bBc=pct<70?'#bbf7d0':pct<90?'#fde68a':'#fecaca';
+  var sc=document.getElementById('expStatusCard');
   sc.style.background=bBg; sc.style.border='2px solid '+bBc;
   sc.innerHTML='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;margin-bottom:8px;">Expenses vs Salary</div>'
-    +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:13px;font-weight:700;color:#475569;">Spent: <strong style="color:'+bCol+'">'+F(sn.totalExp)+' SR</strong></span>'
-    +'<span style="font-size:13px;font-weight:700;color:#475569;">Salary: '+F(sn.salary)+' SR</span></div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;">'
+    +'<span style="font-size:13px;font-weight:700;color:#475569;">Spent: <strong style="color:'+bCol+'">'+F(G.totalExp)+' SR</strong></span>'
+    +'<span style="font-size:13px;font-weight:700;color:#475569;">Salary: '+F(G.salary)+' SR</span></div>'
     +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+bCol+';"></div></div>'
     +'<div style="font-size:11px;font-weight:700;color:'+bCol+';margin-top:5px;text-align:right;">'+pct+'% of salary used on expenses</div>';
 
-  BILL_KEYS.forEach(function(k){ var el=document.getElementById('b_'+k); if(el) el.value=data.bills[k]||''; });
-  document.getElementById('fixedTotalLbl').textContent = F(sn.fixedExp)+' SR';
-  document.getElementById('othTotalLbl').textContent   = F(sn.otherExp)+' SR';
+  BILL_KEYS.forEach(function(k){var el=document.getElementById('b_'+k);if(el)el.value=data.bills[k]||'';});
+  document.getElementById('fixedTotalLbl').textContent=F(G.fixedExp)+' SR';
+  document.getElementById('othTotalLbl').textContent=F(G.otherExp)+' SR';
 
-  var list = document.getElementById('othList');
-  if (!data.other.length) {
-    list.innerHTML='<div class="empty">No other spending logged</div>';
-  } else {
-    list.innerHTML='<div class="item-list">'+data.other.map(function(e){
+  var list=document.getElementById('othList');
+  list.innerHTML=!data.other.length?'<div class="empty">No other spending logged</div>'
+    :'<div class="item-list">'+data.other.map(function(e){
       return '<div class="item-row"><div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+e.desc+'</div>'
         +'<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-top:2px;">'+e.date+' · '+e.cat+'</div></div>'
         +'<div style="display:flex;align-items:center;"><span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#f97316;">'+F(e.amt)+' SR</span>'
         +'<button class="del-btn" onclick="delOther('+e.id+')">×</button></div></div>';
     }).join('')+'</div>';
-  }
 
-  var remCol=sn.remaining>=0?'#16a34a':'#dc2626';
-  var remBg=sn.remaining>=0?'#f0fdf4':'#fef2f2';
-  var remBc=sn.remaining>=0?'#bbf7d0':'#fecaca';
+  var remCol=G.remaining>=0?'#16a34a':'#dc2626';
+  var remBg=G.remaining>=0?'#f0fdf4':'#fef2f2', remBc=G.remaining>=0?'#bbf7d0':'#fecaca';
   var rc=document.getElementById('expRemainingCard');
   rc.style.background=remBg; rc.style.border='2px solid '+remBc;
   rc.innerHTML='<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:'+remCol+';margin-bottom:6px;">Remaining → Split to 3 Saving Plans</div>'
-    +'<div style="font-size:34px;font-weight:900;font-family:\'Courier New\',monospace;color:'+remCol+';">'+(sn.remaining<0?'−':'')+F(sn.remaining)+' SR</div>'
-    +(sn.remaining>0?
+    +'<div style="font-size:34px;font-weight:900;font-family:\'Courier New\',monospace;color:'+remCol+';">'+(G.remaining<0?'−':'')+F(G.remaining)+' SR</div>'
+    +(G.remaining>0?
       '<div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">'
-        +'<div style="flex:1 1 100px;background:#fff;border-radius:10px;padding:10px 13px;">'
-          +'<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:3px;">🚗 Car Plan</div>'
-          +'<div style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+F(sn.carSave)+' SR</div></div>'
-        +'<div style="flex:1 1 100px;background:#fff;border-radius:10px;padding:10px 13px;">'
-          +'<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:3px;">🏫 School</div>'
-          +'<div style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(sn.schSave)+' SR</div></div>'
-        +'<div style="flex:1 1 100px;background:#fff;border-radius:10px;padding:10px 13px;">'
-          +'<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:3px;">🤝 Bro Debt</div>'
-          +'<div style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:#c026d3;">'+F(sn.broSave)+' SR</div></div>'
+        +remBox('🚗 Car','#2563eb',G.carSave)
+        +remBox('🏫 School','#16a34a',G.schSave)
+        +remBox('🤝 Bro Debt','#c026d3',G.broSave)
       +'</div>'
-    :'<div style="font-size:12px;font-weight:700;color:'+remCol+';margin-top:7px;">'+(sn.remaining===0?'Plans get 0 this month.':'Reduce expenses to save for your plans.')+'</div>');
+    :'<div style="font-size:12px;font-weight:700;color:'+remCol+';margin-top:7px;">'+(G.remaining===0?'Plans get 0 this month.':'Reduce expenses to free up savings.')+'</div>');
+}
+function remBox(lbl,col,val){
+  return '<div style="flex:1 1 100px;background:#fff;border-radius:10px;padding:10px 13px;">'
+    +'<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:3px;">'+lbl+'</div>'
+    +'<div style="font-size:18px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(val)+' SR</div></div>';
 }
 
-// ═══════════════════════════════════════
-// CAR PLAN TAB
-// ═══════════════════════════════════════
-function renderCar(sn) {
-  var carSaved=totalCarSaved(), carRem=Math.max(0,CAR_TOTAL-carSaved), pct=Math.min(100,Math.round(carSaved/CAR_TOTAL*100));
-  var ci=sn.ci, carDone=0;
-  for(var i=0;i<CAR_N;i++) if(getCarSave(i)>0) carDone++;
-  var mLeft=ci!==null?Math.max(0,CAR_N-ci):0;
-  var storedCarThis=ci!==null?getCarSave(ci):0;
-  var carSavedExThis=carSaved-storedCarThis;
-  var carRemExThis=Math.max(0,CAR_TOTAL-carSavedExThis);
-  var minNeeded=mLeft>0?carRemExThis/mLeft:0;
-  var thisMonthSave=sn.carSave;
+// ═══════════════════════════════════════════════════════════════════════
+// CAR PLAN TAB — reads from G
+// ═══════════════════════════════════════════════════════════════════════
+function renderCar(){
+  var carSaved=G.carSavedTotal, carRem=Math.max(0,CAR_TOTAL-carSaved);
+  var pct=Math.min(100,Math.round(carSaved/CAR_TOTAL*100));
+  var ci=G.ci, carDone=0;
+  for(var i=0;i<CAR_N;i++)if(getCarSave(i)>0)carDone++;
+  // minNeeded recalculated from totals excluding this month (for display accuracy)
+  var storedThisMonth=ci!==null?getCarSave(ci):0;
+  var prevSaved=carSaved-storedThisMonth;
+  var stillNeeded=Math.max(0,CAR_TOTAL-prevSaved);
+  var mLeft=G.carMLeft;
+  var minNeeded=mLeft>0?stillNeeded/mLeft:0;
 
   document.getElementById('carHeroAmount').textContent=F(carRem)+' SR';
   document.getElementById('carHeroSub').textContent=F(carSaved)+' SR saved · '+F(carRem)+' SR remaining · Due Feb 2030';
+
   document.getElementById('carStatGrid').innerHTML=[
-    {lbl:'Total Saved',val:F(carSaved)+' SR',col:'#16a34a',sub:'out of '+F(CAR_TOTAL)+' SR'},
-    {lbl:'Months Done',val:carDone+' / 47',col:'#2563eb',sub:'months completed'},
-    {lbl:'Months Left',val:mLeft,col:'#7c3aed',sub:'to Feb 2030'},
-    {lbl:'Min This Month',val:F(minNeeded)+' SR',col:'#d97706',sub:'to stay on track'},
+    {lbl:'Total Saved',   val:F(carSaved)+' SR', col:'#16a34a',sub:'out of '+F(CAR_TOTAL)+' SR'},
+    {lbl:'Months Done',   val:carDone+' / 47',   col:'#2563eb',sub:'completed'},
+    {lbl:'Months Left',   val:mLeft||'—',         col:'#7c3aed',sub:'to Feb 2030'},
+    {lbl:'Min/Month Now', val:F(minNeeded)+' SR', col:'#d97706',sub:'to stay on track'},
   ].map(function(s){
     return '<div class="plan-stat"><div class="sum-label">'+s.lbl+'</div>'
       +'<div class="sum-val" style="color:'+s.col+';font-size:18px;">'+s.val+'</div>'
@@ -819,81 +865,78 @@ function renderCar(sn) {
   }).join('');
 
   document.getElementById('carProgressSection').innerHTML=
-    '<div class="pbar-label"><span>Ownership Progress</span><span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+pct+'%</span></div>'
+    '<div class="pbar-label"><span>Ownership Progress</span>'
+      +'<span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+pct+'%</span></div>'
     +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:#2563eb;"></div></div>'
-    +'<div class="pbar-sub" style="margin-bottom:12px;">'+F(carSaved)+' SR saved · '+carDone+' of 47 months done</div>';
+    +'<div class="pbar-sub" style="margin-bottom:12px;">'+F(carSaved)+' / '+F(CAR_TOTAL)+' SR · '+carDone+' of 47 months</div>';
 
-  var ca=document.getElementById('carAlertBox');
+  var ca=document.getElementById('carAlertBox'), s=G.carSave;
   if(ci===null){
-    ca.style.cssText='background:#f1f5f9;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:0;display:flex;gap:8px;';
-    ca.innerHTML='<span>ℹ</span> Car Plan is active Apr 2026 – Feb 2030. Navigate to those months.';
-  } else if(thisMonthSave>=minNeeded&&minNeeded>0){
-    ca.style.cssText='background:#f0fdf4;border:2px solid #bbf7d0;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#16a34a;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    ca.innerHTML='<span>✓</span> Saving <strong>'+F(thisMonthSave)+' SR</strong> — <strong>'+F(thisMonthSave-minNeeded)+' SR</strong> above minimum. On track!';
-  } else if(thisMonthSave>0){
-    ca.style.cssText='background:#fffbeb;border:2px solid #fde68a;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#d97706;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    ca.innerHTML='<span>!</span> Saving <strong>'+F(thisMonthSave)+' SR</strong> — below minimum of <strong>'+F(minNeeded)+' SR</strong>. Shortfall spreads over remaining months.';
+    ca.style.cssText='background:#f1f5f9;color:#64748b;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;';
+    ca.innerHTML='<span>ℹ</span> Car Plan active Apr 2026 – Feb 2030. Navigate to those months.';
+  } else if(s>=minNeeded&&minNeeded>0){
+    ca.style.cssText='background:#f0fdf4;border:2px solid #bbf7d0;color:#16a34a;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    ca.innerHTML='<span>✓</span> Saving <strong>'+F(s)+' SR</strong> · <strong>'+F(s-minNeeded)+' SR</strong> above minimum. On track!';
+  } else if(s>0){
+    ca.style.cssText='background:#fffbeb;border:2px solid #fde68a;color:#d97706;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    ca.innerHTML='<span>!</span> Saving <strong>'+F(s)+' SR</strong> — below minimum of <strong>'+F(minNeeded)+' SR</strong>. Shortfall spreads to remaining months.';
   } else {
-    ca.style.cssText='background:#fef2f2;border:2px solid #fecaca;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#dc2626;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
+    ca.style.cssText='background:#fef2f2;border:2px solid #fecaca;color:#dc2626;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
     ca.innerHTML='<span>!</span> No car saving this month. Min needed: <strong>'+F(minNeeded)+' SR</strong>.';
   }
 
+  var carAfterNote=ci!==null?'After this month: '+F(Math.max(0,carRem-s))+' SR remaining over '+(mLeft-1)+' months':'';
   document.getElementById('carThisMonth').innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed to stay on track</div>'
-      +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">Recalculated from remaining balance ÷ months left</div></div>'
-      +'<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#d97706;">'+F(minNeeded)+' SR</span></div>'
-    +'<div style="height:2px;background:#f1f5f9;margin:10px 0;"></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Auto-saved this month</div>'
-      +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">From remaining after expenses (3-way urgency split)</div></div>'
-      +'<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#2563eb;">'+F(thisMonthSave)+' SR</span></div>'
-    +(ci===null?''
-      :'<div style="margin-top:12px;background:#eff6ff;border-radius:10px;padding:10px 14px;">'
-        +'<div style="font-size:11px;font-weight:700;color:#94a3b8;">After this month: '+F(Math.max(0,carRem-thisMonthSave))+' SR remaining over '+(mLeft-1)+' months</div></div>');
+    planSavingBox(minNeeded,s,
+      'Remaining ÷ months left ('+F(CAR_TOTAL-prevSaved)+' ÷ '+mLeft+')',
+      'From remaining after expenses (3-way urgency split)',
+      carAfterNote,
+      {onTrackBg:'#eff6ff',onTrackBorder:'#bfdbfe',onTrackCol:'#2563eb',accentCol:'#2563eb'});
+  updateCardStatus('carThisMonthCard','carThisMonthTitle',s,minNeeded,'#2563eb','#bfdbfe','#dbeafe');
 
-  var sch2='', runRem=carRem, runM=mLeft;
-  var startI=ci!==null?ci:0, count=0;
+  // Schedule
+  var sched='', runRem=carRem, runM=mLeft, startI=ci!==null?ci:0, count=0;
   for(var j=startI;j<CAR_N&&count<12;j++,count++){
     var mo=carMonthOf(j), saved=getCarSave(j), req=runM>0?runRem/runM:0, isNow=(j===ci);
     var sc2=saved>0&&saved>=req?'#16a34a':saved>0?'#d97706':'#94a3b8';
-    sch2+='<div class="month-sched-row" style="'+(isNow?'background:#eff6ff;border-radius:10px;padding:11px;margin:-2px 0;':'')+'">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+MN[mo.m]+' '+mo.y
-        +(isNow?' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 7px;border-radius:5px;font-weight:800;">NOW</span>':'')+' </div>'
-        +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">Month '+(j+1)+'/47 · min: '+F(req)+' SR</div></div>'
-      +'<div style="text-align:right;">'
-        +'<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(saved>0?sc2:'#cbd5e1')+';">'+(saved>0?F(saved)+' SR':'—')+'</div>'
-        +'<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+(saved>0?(saved>=req?'✓ on track':'below min'):'not saved yet')+'</div>'
-      +'</div></div>';
+    sched+=schedRow(MN[mo.m]+' '+mo.y+(isNow?' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 7px;border-radius:5px;font-weight:800;">NOW</span>':''),
+      'Month '+(j+1)+'/47 · min: '+F(req)+' SR',
+      saved>0?F(saved)+' SR':'—', saved>0?(saved>=req?'✓ on track':'below min'):'not saved yet',
+      sc2, isNow?'background:#eff6ff;border-radius:10px;padding:11px;margin:-2px 0;':'');
     runRem=Math.max(0,runRem-saved); runM=Math.max(0,runM-1);
   }
-  document.getElementById('carSchedule').innerHTML=sch2||'<div class="empty">Navigate to Apr 2026 – Feb 2030</div>';
+  document.getElementById('carSchedule').innerHTML=sched||'<div class="empty">Navigate to Apr 2026 – Feb 2030</div>';
 }
 
-// ═══════════════════════════════════════
-// SCHOOL FEES TAB
-// ═══════════════════════════════════════
-function renderSchool(sn) {
-  var pi=sn.pi;
-  function findCurrentOrNextPayment(){
-    for(var i=0;i<SCH_PAYMENTS.length;i++){if(schTotalSavedFor(i)<SCH_PAYMENTS[i].amt)return i;}
-    return SCH_PAYMENTS.length>0?SCH_PAYMENTS.length-1:null;
-  }
-  var activePi=pi!==null?pi:findCurrentOrNextPayment();
-  var nextPi=activePi!==null&&activePi+1<SCH_PAYMENTS.length?activePi+1:null;
-  var totalNeeded=SCH_PAYMENTS.reduce(function(s,p){return s+p.amt;},0);
-  var totalSaved=0;
-  for(var i=0;i<SCH_PAYMENTS.length;i++) totalSaved+=schTotalSavedFor(i);
-  var totalLeft=totalNeeded-totalSaved;
-  document.getElementById('schHeroAmount').textContent=F(totalLeft)+' SR';
-  document.getElementById('schHeroSub').textContent=totalSaved>0?F(totalSaved)+' SR saved of '+F(totalNeeded)+' SR · Last payment Feb 2035':'Total across all payments · Last payment Feb 2035';
+// ═══════════════════════════════════════════════════════════════════════
+// SCHOOL FEES TAB — reads from G
+// ═══════════════════════════════════════════════════════════════════════
+function renderSchool(){
+  var pi=G.pi;
 
+  // Find active (first unfunded) payment
+  function nextUnfunded(){
+    for(var i=0;i<SCH_PAYMENTS.length;i++)if(schTotalFor(i)<SCH_PAYMENTS[i].amt)return i;
+    return SCH_PAYMENTS.length-1;
+  }
+  var activePi=pi!==null?pi:nextUnfunded();
+  var nextPi=activePi!==null&&activePi+1<SCH_PAYMENTS.length?activePi+1:null;
+
+  var totalNeeded=SCH_PAYMENTS.reduce(function(s,p){return s+p.amt;},0);
+  var totalSaved=0; for(var i=0;i<SCH_PAYMENTS.length;i++)totalSaved+=schTotalFor(i);
+  var totalLeft=totalNeeded-totalSaved;
+
+  document.getElementById('schHeroAmount').textContent=F(totalLeft)+' SR';
+  document.getElementById('schHeroSub').textContent=F(totalSaved)+' SR saved of '+F(totalNeeded)+' SR · Last payment Feb 2035';
+
+  // Payment cards
   function payCard(pIdx,label){
     if(pIdx===null||pIdx>=SCH_PAYMENTS.length)return'';
-    var p=SCH_PAYMENTS[pIdx],w=SCH_WINDOWS[pIdx],sved=schTotalSavedFor(pIdx),rem=Math.max(0,p.amt-sved),pct=Math.min(100,Math.round(sved/p.amt*100));
+    var p=SCH_PAYMENTS[pIdx],w=SCH_WINDOWS[pIdx];
+    var sved=schTotalFor(pIdx), rem=Math.max(0,p.amt-sved), pct=Math.min(100,Math.round(sved/p.amt*100));
     var col=pIdx%2===0?'#16a34a':'#0d9488';
     var isActive=(pIdx===pi);
-    var offset=isActive?schMonthOffset(vm,vy,pIdx):0;
+    var offset=isActive?schOffset(vm,vy,pIdx):0;
     var mLeft=isActive?Math.max(1,w.n-offset):w.n;
     var minMo=mLeft>0?rem/mLeft:0;
     return '<div style="background:#fff;border:2px solid '+(isActive?col:'#e2e8f0')+';border-radius:14px;padding:15px 17px;margin-bottom:10px;">'
@@ -901,7 +944,8 @@ function renderSchool(sn) {
         +'<div><div style="font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:'+(isActive?col:'#94a3b8')+';">'+label+(isActive?' · ACTIVE':'')+'</div>'
           +'<div style="font-size:18px;font-weight:900;color:#1a2332;margin-top:2px;">'+MN[p.m]+' '+p.y+' — '+F(p.amt)+' SR</div>'
           +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:3px;">Save: '+MN[w.startM]+' '+w.startY+' → '+MN[w.endM]+' '+w.endY+' ('+w.n+' months)</div></div>'
-        +'<div style="text-align:right;"><div style="font-size:22px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(sved)+' SR</div>'
+        +'<div style="text-align:right;">'
+          +'<div style="font-size:22px;font-weight:900;font-family:\'Courier New\',monospace;color:'+col+';">'+F(sved)+' SR</div>'
           +'<div style="font-size:11px;font-weight:700;color:'+(rem===0?'#16a34a':'#94a3b8')+';">'+F(rem)+' SR left</div></div></div>'
       +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:'+col+';"></div></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#94a3b8;margin-top:4px;">'
@@ -910,16 +954,17 @@ function renderSchool(sn) {
         +(rem===0?'<span style="color:#16a34a;">✓ Fully saved!</span>':'')
       +'</div></div>';
   }
-  document.getElementById('schPayInfo').innerHTML=payCard(activePi,'Payment '+(activePi!==null?activePi+1:''))+(nextPi!==null?payCard(nextPi,'Next — Payment '+(nextPi+1)):'');
+  document.getElementById('schPayInfo').innerHTML=payCard(activePi,'Payment '+(activePi+1))+(nextPi!==null?payCard(nextPi,'Next — Payment '+(nextPi+1)):'');
 
-  var activeSaved=activePi!==null?schTotalSavedFor(activePi):0;
+  var activeSaved=activePi!==null?schTotalFor(activePi):0;
   var activeAmt=activePi!==null?SCH_PAYMENTS[activePi].amt:0;
   var activeRem=Math.max(0,activeAmt-activeSaved);
+
   document.getElementById('schStatGrid').innerHTML=[
-    {lbl:'Total Saved',val:F(totalSaved)+' SR',col:'#16a34a',sub:'across all payments'},
-    {lbl:'Total Left',val:F(totalLeft)+' SR',col:'#d97706',sub:'to pay by Feb 2035'},
+    {lbl:'Total Saved', val:F(totalSaved)+' SR', col:'#16a34a',sub:'across all payments'},
+    {lbl:'Total Left',  val:F(totalLeft)+' SR',  col:'#d97706',sub:'to pay by Feb 2035'},
     {lbl:'Active Saved',val:F(activeSaved)+' SR',col:'#16a34a',sub:activePi!==null?MN[SCH_PAYMENTS[activePi].m]+' '+SCH_PAYMENTS[activePi].y:'—'},
-    {lbl:'Active Left',val:F(activeRem)+' SR',col:activeRem===0?'#16a34a':'#d97706',sub:'this payment'},
+    {lbl:'Active Left', val:F(activeRem)+' SR',  col:activeRem===0?'#16a34a':'#d97706',sub:'this payment'},
   ].map(function(s){
     return '<div class="plan-stat"><div class="sum-label">'+s.lbl+'</div>'
       +'<div class="sum-val" style="color:'+s.col+';font-size:17px;">'+s.val+'</div>'
@@ -929,157 +974,229 @@ function renderSchool(sn) {
   var overallPct=totalNeeded>0?Math.min(100,Math.round(totalSaved/totalNeeded*100)):0;
   var activePct=activeAmt>0?Math.min(100,Math.round(activeSaved/activeAmt*100)):0;
   document.getElementById('schProgressSection').innerHTML=
-    '<div class="pbar-label"><span>🏫 Overall School Progress</span><span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+overallPct+'%</span></div>'
-    +'<div class="pbar-track"><div class="pbar-fill" style="width:'+overallPct+'%;background:#16a34a;"></div></div>'
-    +'<div class="pbar-sub">'+F(totalSaved)+' / '+F(totalNeeded)+' SR total</div>'
-    +(activePi!==null?
-      '<div class="pbar-label" style="margin-top:6px;"><span>Active: '+MN[SCH_PAYMENTS[activePi].m]+' '+SCH_PAYMENTS[activePi].y+' ('+F(activeAmt)+' SR)</span>'
-        +'<span style="font-size:15px;font-weight:900;font-family:\'Courier New\',monospace;color:#0d9488;">'+activePct+'%</span></div>'
-      +'<div class="pbar-track"><div class="pbar-fill" style="width:'+activePct+'%;background:#0d9488;"></div></div>'
-      +'<div class="pbar-sub" style="margin-bottom:12px;">'+F(activeSaved)+' / '+F(activeAmt)+' SR</div>'
-    :'<div style="margin-bottom:12px;"></div>');
+    pbar('🏫 Overall Progress',overallPct,'#16a34a',F(totalSaved)+' / '+F(totalNeeded)+' SR total')
+    +(activePi!==null?pbar2('Active: '+MN[SCH_PAYMENTS[activePi].m]+' '+SCH_PAYMENTS[activePi].y+' ('+F(activeAmt)+' SR)',activePct,'#0d9488',F(activeSaved)+' / '+F(activeAmt)+' SR'):'');
 
   var sa=document.getElementById('schAlertBox');
-  var thisSchSave=pi!==null?getSchSaveP(pi,schMonthOffset(vm,vy,pi)):0;
-  var minNeededSch=sn.schMinNeeded;
-  var pLabel=activePi!==null?MN[SCH_PAYMENTS[activePi].m]+' '+SCH_PAYMENTS[activePi].y+' ('+F(activeAmt)+' SR)':'';
-  if(pi===null){sa.style.cssText='background:#f1f5f9;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:0;display:flex;gap:8px;';sa.innerHTML='<span>ℹ</span> Not in an active school saving window.';}
-  else if(thisSchSave>=minNeededSch&&minNeededSch>0){sa.style.cssText='background:#f0fdf4;border:2px solid #bbf7d0;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#16a34a;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';sa.innerHTML='<span>✓</span> Saving <strong>'+F(thisSchSave)+' SR</strong> for '+pLabel+' — on track!';}
-  else if(thisSchSave>0){sa.style.cssText='background:#fffbeb;border:2px solid #fde68a;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#d97706;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';sa.innerHTML='<span>!</span> Saving <strong>'+F(thisSchSave)+' SR</strong> — below minimum of <strong>'+F(minNeededSch)+' SR</strong>.';}
-  else{sa.style.cssText='background:#fef2f2;border:2px solid #fecaca;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#dc2626;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';sa.innerHTML='<span>!</span> No school saving this month. Min needed: <strong>'+F(minNeededSch)+' SR</strong>.';}
+  // THIS MONTH: use G.schSave (same number as Overview/Income)
+  var thisMonthSchSave = G.schSave;
+  var minNeededSch     = G.schMin;
+  if(pi===null){
+    sa.style.cssText='background:#f1f5f9;color:#64748b;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;';
+    sa.innerHTML='<span>ℹ</span> Not in an active school saving window. Navigate to a saving period.';
+  } else if(thisMonthSchSave>=minNeededSch&&minNeededSch>0){
+    sa.style.cssText='background:#f0fdf4;border:2px solid #bbf7d0;color:#16a34a;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    sa.innerHTML='<span>✓</span> Saving <strong>'+F(thisMonthSchSave)+' SR</strong> for '+MN[SCH_PAYMENTS[pi].m]+' '+SCH_PAYMENTS[pi].y+' payment — on track!';
+  } else if(thisMonthSchSave>0){
+    sa.style.cssText='background:#fffbeb;border:2px solid #fde68a;color:#d97706;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    sa.innerHTML='<span>!</span> Saving <strong>'+F(thisMonthSchSave)+' SR</strong> — below min of <strong>'+F(minNeededSch)+' SR</strong>. Shortfall spreads to later months.';
+  } else {
+    sa.style.cssText='background:#fef2f2;border:2px solid #fecaca;color:#dc2626;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    sa.innerHTML='<span>!</span> No school saving this month. Min needed: <strong>'+F(minNeededSch)+' SR</strong>.';
+  }
 
+  // This month section — clearly showing BOTH numbers from G
   document.getElementById('schThisMonth').innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed this month</div>'
-        +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+(pi!==null?F(activeRem)+' SR left · '+sn.schMonthsLeft+' months in window':'Not in active saving window')+'</div></div>'
-      +'<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#d97706;">'+F(minNeededSch)+' SR</span></div>'
-    +'<div style="height:2px;background:#f1f5f9;margin:10px 0;"></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Auto-saved this month</div>'
-        +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">From remaining (3-way urgency split)</div></div>'
-      +'<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#16a34a;">'+F(thisSchSave)+' SR</span></div>';
+    planSavingBox(minNeededSch, thisMonthSchSave,
+      pi!==null?F(activeRem)+' SR left ÷ '+G.schMLeft+' months in window':'Not in active saving window',
+      'From remaining after expenses (3-way urgency split)',
+      '',
+      {onTrackBg:'#f0fdf4',onTrackBorder:'#86efac',onTrackCol:'#16a34a',accentCol:'#16a34a'});
+  updateCardStatus('schThisMonthCard','schThisMonthTitle',thisMonthSchSave,minNeededSch,'#16a34a','#86efac','#bbf7d0');
 
+  // Schedule
   var sched='';
   if(activePi!==null){
-    var wSch=SCH_WINDOWS[activePi],runSavedAcc=0;
+    var wSch=SCH_WINDOWS[activePi], runSaved=0;
     for(var o=0;o<wSch.n;o++){
-      var savedO=getSchSaveP(activePi,o);
-      var remNow=Math.max(0,activeAmt-runSavedAcc);
+      var savedO=getSchSave(activePi,o);
+      var remNow=Math.max(0,activeAmt-runSaved);
       var mLeftO=Math.max(1,wSch.n-o);
       var reqO=remNow/mLeftO;
-      var calMo=wSch.startM+o,calYr=wSch.startY+Math.floor(calMo/12);
-      calMo=calMo%12;
+      var calMo=(wSch.startM+o)%12, calYr=wSch.startY+Math.floor((wSch.startM+o)/12);
       var isNow=(calMo===vm&&calYr===vy);
       var sc4=savedO>0&&savedO>=reqO?'#16a34a':savedO>0?'#d97706':'#94a3b8';
-      sched+='<div class="month-sched-row" style="'+(isNow?'background:#f0fdf4;border-radius:10px;padding:11px;margin:-2px 0;':'')+'">'
-        +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+MN[calMo]+' '+calYr+(isNow?' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 6px;border-radius:5px;font-weight:800;">NOW</span>':'')+'</div>'
-          +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">Month '+(o+1)+'/'+wSch.n+' · min: '+F(reqO)+' SR</div></div>'
-        +'<div style="text-align:right;">'
-          +'<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(savedO>0?sc4:'#cbd5e1')+';">'+(savedO>0?F(savedO)+' SR':'—')+'</div>'
-          +'<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+(savedO>0?(savedO>=reqO?'✓ on track':'below min'):'not saved yet')+'</div>'
-        +'</div></div>';
-      runSavedAcc+=savedO;
+      sched+=schedRow(
+        MN[calMo]+' '+calYr+(isNow?' <span style="font-size:10px;background:#dbeafe;color:#2563eb;padding:2px 6px;border-radius:5px;font-weight:800;">NOW</span>':''),
+        'Month '+(o+1)+'/'+wSch.n+' · min: '+F(reqO)+' SR',
+        savedO>0?F(savedO)+' SR':'—',
+        savedO>0?(savedO>=reqO?'✓ on track':'below min'):'not saved yet',
+        sc4, isNow?'background:#f0fdf4;border-radius:10px;padding:11px;margin:-2px 0;':''
+      );
+      runSaved+=savedO;
     }
   }
   document.getElementById('schSchedule').innerHTML=sched||'<div class="empty">No active payment schedule</div>';
 }
 
-// ═══════════════════════════════════════
-// BROTHER DEBT TAB
-// ═══════════════════════════════════════
-function renderBrother(sn) {
-  var bi       = sn.bi;
-  var broSaved = totalBroSaved();
-  var broRem   = Math.max(0, BRO_TOTAL - broSaved);
-  var pct      = Math.min(100, Math.round(broSaved / BRO_TOTAL * 100));
-  var broDone  = 0;
-  for (var i = 0; i < BRO_N; i++) if (getBroSave(i) > 0) broDone++;
+// ═══════════════════════════════════════════════════════════════════════
+// BROTHER DEBT TAB — reads from G
+// ═══════════════════════════════════════════════════════════════════════
+function renderBrother(){
+  var bi=G.bi, broSaved=G.broSavedTotal, broRem=Math.max(0,BRO_TOTAL-broSaved);
+  var pct=Math.min(100,Math.round(broSaved/BRO_TOTAL*100));
+  var broDone=0; for(var i=0;i<BRO_N;i++)if(getBroSave(i)>0)broDone++;
+  var storedThisMonth=bi!==null?getBroSave(bi):0;
+  var prevSaved=broSaved-storedThisMonth;
+  var stillNeeded=Math.max(0,BRO_TOTAL-prevSaved);
+  var mLeft=G.broMLeft;
+  var minNeeded=mLeft>0?stillNeeded/mLeft:0;
+  var s=G.broSave;
 
-  var mLeft         = bi !== null ? Math.max(0, BRO_N - bi) : 0;
-  var storedBroThis = bi !== null ? getBroSave(bi) : 0;
-  var broSavedExThis = broSaved - storedBroThis;
-  var broRemExThis   = Math.max(0, BRO_TOTAL - broSavedExThis);
-  var minNeeded      = mLeft > 0 ? broRemExThis / mLeft : 0;
-  var thisMonthSave  = sn.broSave;
+  document.getElementById('broHeroAmount').textContent=F(broRem)+' SR';
+  document.getElementById('broHeroSub').textContent=F(broSaved)+' SR saved · '+F(broRem)+' SR remaining · Due Dec 2026';
 
-  document.getElementById('broHeroAmount').textContent = F(broRem) + ' SR';
-  document.getElementById('broHeroSub').textContent    = F(broSaved)+' SR saved · '+F(broRem)+' SR remaining · Due Dec 2026';
-
-  document.getElementById('broStatGrid').innerHTML = [
-    { lbl:'Total Saved',    val:F(broSaved)+' SR',  col:'#16a34a', sub:'out of '+F(BRO_TOTAL)+' SR' },
-    { lbl:'Months Done',    val:broDone+' / 9',     col:'#c026d3', sub:'months completed' },
-    { lbl:'Months Left',    val:mLeft,               col:'#7c3aed', sub:'to Dec 2026' },
-    { lbl:'Min This Month', val:F(minNeeded)+' SR',  col:'#d97706', sub:'to stay on track' },
+  document.getElementById('broStatGrid').innerHTML=[
+    {lbl:'Total Saved',   val:F(broSaved)+' SR', col:'#16a34a',sub:'out of '+F(BRO_TOTAL)+' SR'},
+    {lbl:'Months Done',   val:broDone+' / 9',    col:'#c026d3',sub:'completed'},
+    {lbl:'Months Left',   val:mLeft||'—',          col:'#7c3aed',sub:'to Dec 2026'},
+    {lbl:'Min/Month Now', val:F(minNeeded)+' SR', col:'#d97706',sub:'to stay on track'},
   ].map(function(s){
     return '<div class="plan-stat"><div class="sum-label">'+s.lbl+'</div>'
       +'<div class="sum-val" style="color:'+s.col+';font-size:18px;">'+s.val+'</div>'
       +'<div class="sum-sub">'+s.sub+'</div></div>';
   }).join('');
 
-  document.getElementById('broProgressSection').innerHTML =
+  document.getElementById('broProgressSection').innerHTML=
     '<div class="pbar-label"><span>🤝 Repayment Progress</span>'
       +'<span style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:#c026d3;">'+pct+'%</span></div>'
     +'<div class="pbar-track"><div class="pbar-fill" style="width:'+pct+'%;background:#c026d3;"></div></div>'
-    +'<div class="pbar-sub" style="margin-bottom:12px;">'+F(broSaved)+' SR saved · '+broDone+' of 9 months done · Due Dec 2026</div>';
+    +'<div class="pbar-sub" style="margin-bottom:12px;">'+F(broSaved)+' / '+F(BRO_TOTAL)+' SR · '+broDone+' of 9 months done</div>';
 
-  var ba = document.getElementById('broAlertBox');
-  if (bi === null) {
-    ba.style.cssText = 'background:#f1f5f9;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:0;display:flex;gap:8px;';
-    ba.innerHTML = '<span>ℹ</span> Brother debt saving runs Apr 2026 – Dec 2026. Navigate to those months.';
-  } else if (broRem <= 0) {
-    ba.style.cssText = 'background:#f0fdf4;border:2px solid #bbf7d0;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#16a34a;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    ba.innerHTML = '<span>🎉</span> All 6,000 SR fully saved! Ready to pay back your brother in December 2026.';
-  } else if (thisMonthSave >= minNeeded && minNeeded > 0) {
-    ba.style.cssText = 'background:#f0fdf4;border:2px solid #bbf7d0;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#16a34a;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    ba.innerHTML = '<span>✓</span> Saving <strong>'+F(thisMonthSave)+' SR</strong> this month — <strong>'+F(thisMonthSave-minNeeded)+' SR</strong> above minimum. You\'re on track!';
-  } else if (thisMonthSave > 0) {
-    ba.style.cssText = 'background:#fffbeb;border:2px solid #fde68a;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#d97706;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    ba.innerHTML = '<span>!</span> Saving <strong>'+F(thisMonthSave)+' SR</strong> — below minimum of <strong>'+F(minNeeded)+' SR</strong>. Shortfall spreads over remaining months.';
+  var ba=document.getElementById('broAlertBox');
+  if(bi===null){
+    ba.style.cssText='background:#f1f5f9;color:#64748b;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;';
+    ba.innerHTML='<span>ℹ</span> Brother debt saving runs Apr 2026 – Dec 2026. Navigate to those months.';
+  } else if(broRem<=0){
+    ba.style.cssText='background:#f0fdf4;border:2px solid #bbf7d0;color:#16a34a;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    ba.innerHTML='<span>🎉</span> All 6,000 SR fully saved! Ready to pay back your brother in December 2026.';
+  } else if(s>=minNeeded&&minNeeded>0){
+    ba.style.cssText='background:#f0fdf4;border:2px solid #bbf7d0;color:#16a34a;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    ba.innerHTML='<span>✓</span> Saving <strong>'+F(s)+' SR</strong> — <strong>'+F(s-minNeeded)+' SR</strong> above minimum. On track!';
+  } else if(s>0){
+    ba.style.cssText='background:#fffbeb;border:2px solid #fde68a;color:#d97706;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    ba.innerHTML='<span>!</span> Saving <strong>'+F(s)+' SR</strong> — below min of <strong>'+F(minNeeded)+' SR</strong>. Shortfall spreads to remaining months.';
   } else {
-    ba.style.cssText = 'background:#fef2f2;border:2px solid #fecaca;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;color:#dc2626;margin-bottom:0;display:flex;gap:8px;line-height:1.5;';
-    ba.innerHTML = '<span>!</span> No saving this month. Min needed: <strong>'+F(minNeeded)+' SR</strong>. Add salary &amp; expenses to auto-split.';
+    ba.style.cssText='background:#fef2f2;border:2px solid #fecaca;color:#dc2626;display:flex;gap:8px;border-radius:13px;padding:13px 15px;font-size:13px;font-weight:700;line-height:1.5;';
+    ba.innerHTML='<span>!</span> No saving this month. Min needed: <strong>'+F(minNeeded)+' SR</strong>. Enter salary &amp; expenses to activate split.';
   }
 
-  document.getElementById('broThisMonth').innerHTML =
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed to stay on track</div>'
-        +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+F(broRemExThis)+' SR left ÷ '+mLeft+' months remaining</div></div>'
-      +'<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#d97706;">'+F(minNeeded)+' SR</span></div>'
-    +'<div style="height:2px;background:#f1f5f9;margin:10px 0;"></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Auto-saved this month</div>'
-        +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">From remaining after expenses (3-way urgency split)</div></div>'
-      +'<span style="font-size:21px;font-weight:900;font-family:\'Courier New\',monospace;color:#c026d3;">'+F(thisMonthSave)+' SR</span></div>'
-    +(bi===null?''
-      :'<div style="margin-top:12px;background:#fdf4ff;border-radius:10px;padding:10px 14px;">'
-        +'<div style="font-size:11px;font-weight:700;color:#94a3b8;">After this month: '+F(Math.max(0,broRem-thisMonthSave))+' SR remaining over '+(mLeft-1)+' more months</div></div>');
+  document.getElementById('broThisMonth').innerHTML=
+    planSavingBox(minNeeded, s,
+      F(stillNeeded)+' SR left ÷ '+mLeft+' months',
+      'From remaining after expenses (3-way urgency split)',
+      bi!==null?'After this month: '+F(Math.max(0,broRem-s))+' SR remaining over '+(mLeft-1)+' months':'',
+      {onTrackBg:'#fdf4ff',onTrackBorder:'#e9d5ff',onTrackCol:'#7c3aed',accentCol:'#c026d3'});
+  updateCardStatus('broThisMonthCard','broThisMonthTitle',s,minNeeded,'#c026d3','#e9d5ff','#f3e8ff');
 
-  // Schedule Apr–Dec 2026
-  var sched = '', runRem = broRem, runM = mLeft;
-  for (var i = 0; i < BRO_N; i++) {
-    var mo      = broMonthOf(i);
-    var saved   = getBroSave(i);
-    var req     = runM > 0 ? runRem / runM : 0;
-    var isNow   = (i === bi);
-    var sc5     = saved > 0 && saved >= req ? '#16a34a' : saved > 0 ? '#d97706' : '#94a3b8';
-    sched += '<div class="month-sched-row" style="'+(isNow?'background:#fdf4ff;border-radius:10px;padding:11px;margin:-2px 0;':'')+'">'
-      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+MN[mo.m]+' '+mo.y
-        +(isNow?' <span style="font-size:10px;background:#f3e8ff;color:#c026d3;padding:2px 7px;border-radius:5px;font-weight:800;">NOW</span>':'')+' </div>'
-        +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">Month '+(i+1)+'/9 · min: '+F(req)+' SR</div></div>'
-      +'<div style="text-align:right;">'
-        +'<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(saved>0?sc5:'#cbd5e1')+';">'+(saved>0?F(saved)+' SR':'—')+'</div>'
-        +'<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+(saved>0?(saved>=req?'✓ on track':'below min'):'not saved yet')+'</div>'
-      +'</div></div>';
-    runRem = Math.max(0, runRem - saved);
-    runM   = Math.max(0, runM - 1);
+  var sched='', runRem=broRem, runM=mLeft;
+  for(var i=0;i<BRO_N;i++){
+    var mo=broMonthOf(i), saved=getBroSave(i), req=runM>0?runRem/runM:0, isNow=(i===bi);
+    var sc5=saved>0&&saved>=req?'#16a34a':saved>0?'#d97706':'#94a3b8';
+    sched+=schedRow(
+      MN[mo.m]+' '+mo.y+(isNow?' <span style="font-size:10px;background:#f3e8ff;color:#c026d3;padding:2px 7px;border-radius:5px;font-weight:800;">NOW</span>':''),
+      'Month '+(i+1)+'/9 · min: '+F(req)+' SR',
+      saved>0?F(saved)+' SR':'—',
+      saved>0?(saved>=req?'✓ on track':'below min'):'not saved yet',
+      sc5, isNow?'background:#fdf4ff;border-radius:10px;padding:11px;margin:-2px 0;':''
+    );
+    runRem=Math.max(0,runRem-saved); runM=Math.max(0,runM-1);
   }
-  document.getElementById('broSchedule').innerHTML = sched;
+  document.getElementById('broSchedule').innerHTML=sched;
 }
 
-// ═══════════════════════════════════════
-// EXTRA INCOME
-// ═══════════════════════════════════════
-function addExtraIncome() {
+// ═══════════════════════════════════════════════════════════════════════
+// SHARED HELPERS
+// ═══════════════════════════════════════════════════════════════════════
+// updateCardStatus: updates the outer card border+title color based on on-track status
+function updateCardStatus(cardId, titleId, autoSaved, minNeeded, onTrackCol, onTrackBorder, defaultBorder){
+  var card=document.getElementById(cardId), title=document.getElementById(titleId);
+  if(!card||!title)return;
+  var onTrack=autoSaved>=minNeeded&&minNeeded>0;
+  var behind=autoSaved>0&&autoSaved<minNeeded;
+  if(onTrack){
+    card.style.border='2px solid '+onTrackBorder;
+    card.style.background='';
+    title.style.color=onTrackCol;
+  } else if(behind){
+    card.style.border='2px solid #fde68a';
+    card.style.background='';
+    title.style.color='#d97706';
+  } else {
+    card.style.border='2px solid '+defaultBorder;
+    card.style.background='';
+    title.style.color=onTrackCol;
+  }
+}
+
+
+// theme = { onTrackBg, onTrackBorder, onTrackCol, behindBg, behindBorder, behindCol, accentCol }
+function planSavingBox(minNeeded, autoSaved, sub1, sub2, afterNote, theme){
+  var diff = autoSaved - minNeeded;
+  var onTrack = autoSaved >= minNeeded && minNeeded > 0;
+  var isZero  = autoSaved === 0 && minNeeded === 0;
+  var noSalary= autoSaved === 0 && minNeeded > 0;
+
+  // Box background/border
+  var boxBg, boxBorder, diffCol, diffIcon, diffLabel, diffSub;
+  if(isZero || minNeeded === 0){
+    boxBg='#f8fafc'; boxBorder='#e2e8f0';
+    diffCol='#94a3b8'; diffIcon='—'; diffLabel='Difference'; diffSub='No active plan data yet';
+  } else if(onTrack){
+    boxBg=theme.onTrackBg; boxBorder=theme.onTrackBorder;
+    diffCol=theme.onTrackCol; diffIcon='✓'; diffLabel='Surplus this month'; diffSub='You are ahead of schedule!';
+  } else if(autoSaved > 0){
+    boxBg='#fffbeb'; boxBorder='#fde68a';
+    diffCol='#d97706'; diffIcon='⚠'; diffLabel='Shortfall this month'; diffSub='Will be spread over remaining months';
+  } else {
+    // noSalary / truly 0
+    boxBg='#f8fafc'; boxBorder='#e2e8f0';
+    diffCol='#94a3b8'; diffIcon='—'; diffLabel='Shortfall this month'; diffSub='Enter salary & expenses to activate split';
+  }
+
+  var diffAmt = Math.abs(diff);
+  var diffSign = diff >= 0 ? '+' : '−';
+  if(minNeeded === 0){ diffSign=''; diffAmt=0; }
+
+  return '<div style="background:'+boxBg+';border:2px solid '+boxBorder+';border-radius:14px;padding:15px 16px;">'
+    // Row 1 — Min needed
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Minimum needed to stay on track</div>'
+        +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+sub1+'</div></div>'
+      +'<span style="font-size:22px;font-weight:900;font-family:\'Courier New\',monospace;color:#d97706;">'+F(minNeeded)+' SR</span></div>'
+    // Divider
+    +'<div style="height:2px;background:'+(onTrack?theme.onTrackBorder:boxBorder)+';margin:10px 0;opacity:0.5;"></div>'
+    // Row 2 — Auto saved
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+      +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">Auto-saved this month</div>'
+        +'<div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">'+sub2+'</div></div>'
+      +'<span style="font-size:22px;font-weight:900;font-family:\'Courier New\',monospace;color:'+theme.accentCol+';">'+F(autoSaved)+' SR</span></div>'
+    // Divider
+    +'<div style="height:2px;background:'+(onTrack?theme.onTrackBorder:boxBorder)+';margin:10px 0;opacity:0.5;"></div>'
+    // Row 3 — Difference (Surplus / Shortfall)
+    +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+      +'<div><div style="font-size:14px;font-weight:800;color:'+diffCol+';">'+diffIcon+' '+diffLabel+'</div>'
+        +'<div style="font-size:11px;color:'+diffCol+';font-weight:600;margin-top:2px;opacity:0.8;">'+diffSub+'</div></div>'
+      +'<span style="font-size:22px;font-weight:900;font-family:\'Courier New\',monospace;color:'+diffCol+';">'+(minNeeded>0?diffSign+F(diffAmt)+' SR':'—')+'</span></div>'
+    // After-note
+    +(afterNote?'<div style="margin-top:12px;background:rgba(0,0,0,0.04);border-radius:10px;padding:9px 13px;">'
+        +'<div style="font-size:11px;font-weight:700;color:'+diffCol+';opacity:0.8;">'+afterNote+'</div></div>':'')
+    +'</div>';
+}
+function schedRow(title,sub,valTxt,statusTxt,col,style){
+  return '<div class="month-sched-row" style="'+style+'">'
+    +'<div><div style="font-size:14px;font-weight:700;color:#1a2332;">'+title+'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:#94a3b8;">'+sub+'</div></div>'
+    +'<div style="text-align:right;">'
+      +'<div style="font-size:16px;font-weight:900;font-family:\'Courier New\',monospace;color:'+(valTxt==='—'?'#cbd5e1':col)+';">'+valTxt+'</div>'
+      +'<div style="font-size:10px;font-weight:600;color:#94a3b8;">'+statusTxt+'</div>'
+    +'</div></div>';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// EXTRA INCOME & OTHER SPENDING
+// ═══════════════════════════════════════════════════════════════════════
+function addExtraIncome(){
   var desc=document.getElementById('exIncDesc').value.trim();
   var amt=parseFloat(document.getElementById('exIncAmt').value);
   var err=document.getElementById('exIncErr');
@@ -1087,9 +1204,9 @@ function addExtraIncome() {
   if(!amt||amt<=0){err.textContent='Enter a valid amount';err.style.display='block';return;}
   err.style.display='none';
   data.extraIncome.unshift({id:Date.now(),desc:desc,amt:amt,date:today()});
-  saveAndRender();
   document.getElementById('exIncDesc').value='';
   document.getElementById('exIncAmt').value='';
+  saveAndRender();
 }
 function delExtraIncome(id){
   data.extraIncome=data.extraIncome.filter(function(x){return x.id!==id;});
@@ -1103,9 +1220,9 @@ function addOther(){
   if(!amt||amt<=0){err.textContent='Enter a valid amount';err.style.display='block';return;}
   err.style.display='none';
   data.other.unshift({id:Date.now(),desc:desc,amt:amt,cat:document.getElementById('othCat').value,date:today()});
-  saveAndRender();
   document.getElementById('othDesc').value='';
   document.getElementById('othAmt').value='';
+  saveAndRender();
 }
 function delOther(id){
   data.other=data.other.filter(function(x){return x.id!==id;});
@@ -1117,8 +1234,11 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&activeTab==='income')addExtraIncome();
 });
 
+// ═══════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════
 loadMonth();
-render();
+renderAll();
 </script>
 
 </body>
